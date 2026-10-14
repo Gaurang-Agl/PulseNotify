@@ -1,0 +1,1 @@
+﻿# PulseNotify settings package

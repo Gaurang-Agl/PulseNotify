@@ -1,0 +1,821 @@
+{
+  "info": {
+    "_postman_id": "c869ed13-dd95-482c-ba10-5ca091fdc798",
+    "name": "PulseNotify - Flight Price Monitor & Alert System",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "57563309"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000"
+    }
+  ],
+  "item": [
+    {
+      "name": "01 User (Regular)",
+      "item": [
+        {
+          "name": "Register User A",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201 & Response is JSON\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "    pm.response.to.be.withBody;",
+                  "    pm.response.to.be.json;",
+                  "});",
+                  "",
+                  "const res = pm.response.code === 201 ? pm.response.json() : null;",
+                  "",
+                  "if (res) {",
+                  "    pm.test(\"Response contains valid auth credentials\", function () {",
+                  "        pm.expect(res.access).to.be.a(\"string\").and.not.empty;",
+                  "        pm.expect(res.role).to.eql(\"user\");",
+                  "        pm.expect(res.username).to.eql(\"alice\");",
+                  "    });",
+                  "",
+                  "    res.access && pm.environment.set(\"user_token\", res.access);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"alice\",\n  \"password\": \"securepass123\",\n  \"email\": \"alice@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "register", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Register Duplicate User A",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400 & Response is JSON\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "    pm.response.to.be.withBody;",
+                  "    pm.response.to.be.json;",
+                  "});",
+                  "",
+                  "const res = pm.response.code === 400 ? pm.response.json() : null;",
+                  "",
+                  "if (res) {",
+                  "    pm.test(\"Response contains duplicate username error\", function () {",
+                  "        pm.expect(res.error).to.eql(\"Username already exists\");",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"alice\",\n  \"password\": \"anotherpass\",\n  \"email\": \"alice2@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "register", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login Valid Credentials User A",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200 & Response is JSON\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.response.to.be.withBody;",
+                  "    pm.response.to.be.json;",
+                  "});",
+                  "",
+                  "const res = pm.response.code === 200 ? pm.response.json() : null;",
+                  "",
+                  "if (res) {",
+                  "    pm.test(\"Response contains valid auth credentials\", function () {",
+                  "        pm.expect(res.access).to.be.a(\"string\").and.not.empty;",
+                  "        pm.expect(res.username).to.eql(\"alice\");",
+                  "    });",
+                  "",
+                  "    res.access && pm.environment.set(\"user_token\", res.access);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"alice\",\n  \"password\": \"securepass123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login Invalid Credentials User A",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 401 & Response is JSON\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "    pm.response.to.be.withBody;",
+                  "    pm.response.to.be.json;",
+                  "});",
+                  "",
+                  "const res = pm.response.code === 401 ? pm.response.json() : null;",
+                  "",
+                  "if (res) {",
+                  "    pm.test(\"Response contains invalid credentials error\", function () {",
+                  "        pm.expect(res.error).to.eql(\"Invalid credentials\");",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"alice\",\n  \"password\": \"wrongpass\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Register Second User B",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201 & Response is JSON\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "    pm.response.to.be.withBody;",
+                  "    pm.response.to.be.json;",
+                  "});",
+                  "",
+                  "const res = pm.response.code === 201 ? pm.response.json() : null;",
+                  "",
+                  "if (res) {",
+                  "    pm.test(\"Response contains valid auth credentials\", function () {",
+                  "        pm.expect(res.access).to.be.a(\"string\").and.not.empty;",
+                  "        pm.expect(res.role).to.eql(\"user\");",
+                  "        pm.expect(res.username).to.eql(\"bob\");",
+                  "    });",
+                  "",
+                  "    res.access && pm.environment.set(\"user_second_token\", res.access);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"bob\",\n  \"password\": \"bobpassword123\",\n  \"email\": \"bob@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "register", ""]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "02 Admin User Authentication",
+      "item": [
+        {
+          "name": "Register Admin User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201 & Response is JSON\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "    pm.response.to.be.withBody;",
+                  "    pm.response.to.be.json;",
+                  "});",
+                  "",
+                  "const res = pm.response.code === 201 ? pm.response.json() : null;",
+                  "",
+                  "if (res) {",
+                  "    pm.test(\"Response contains valid auth credentials with default user role\", function () {",
+                  "        pm.expect(res.access).to.be.a(\"string\").and.not.empty;",
+                  "        pm.expect(res.role).to.eql(\"user\");",
+                  "        pm.expect(res.username).to.eql(\"admin_user\");",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin_user\",\n  \"password\": \"adminpass123\",\n  \"email\": \"admin@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "register", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login Admin User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200 & Response is JSON\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.response.to.be.withBody;",
+                  "    pm.response.to.be.json;",
+                  "});",
+                  "",
+                  "const res = pm.response.code === 200 ? pm.response.json() : null;",
+                  "",
+                  "if (res) {",
+                  "    pm.test(\"Response contains valid admin auth credentials\", function () {",
+                  "        pm.expect(res.access).to.be.a(\"string\").and.not.empty;",
+                  "        pm.expect(res.role).to.eql(\"admin\");",
+                  "        pm.expect(res.username).to.eql(\"admin_user\");",
+                  "    });",
+                  "",
+                  "    res.access && pm.environment.set(\"admin_token\", res.access);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin_user\",\n  \"password\": \"adminpass123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login", ""]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "03 Flight Price Alerts (Regular User)",
+      "item": [
+        {
+          "name": "Create Alert 1 DEL-BOM for User A",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201 & Response is JSON\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "    pm.response.to.be.withBody;",
+                  "    pm.response.to.be.json;",
+                  "});",
+                  "",
+                  "const res = pm.response.code === 201 ? pm.response.json() : null;",
+                  "",
+                  "if (res) {",
+                  "    pm.test(\"Alert created with active status and valid ID\", function () {",
+                  "        pm.expect(res.id).to.be.a(\"number\");",
+                  "        pm.expect(res.origin).to.eql(\"DEL\");",
+                  "        pm.expect(res.destination).to.eql(\"BOM\");",
+                  "        pm.expect(res.status).to.eql(\"active\");",
+                  "    });",
+                  "",
+                  "    res.id && pm.environment.set(\"created_alert_id\", String(res.id));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"origin\": \"DEL\",\n  \"destination\": \"BOM\",\n  \"threshold_price\": 4500.00\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/alerts/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "alerts", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Alert 2 BLR-HYD for User A",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201 & Response is JSON\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "    pm.response.to.be.withBody;",
+                  "    pm.response.to.be.json;",
+                  "});",
+                  "",
+                  "const res = pm.response.code === 201 ? pm.response.json() : null;",
+                  "",
+                  "if (res) {",
+                  "    pm.test(\"Alert created successfully for BLR-HYD\", function () {",
+                  "        pm.expect(res.id).to.be.a(\"number\");",
+                  "        pm.expect(res.origin).to.eql(\"BLR\");",
+                  "        pm.expect(res.destination).to.eql(\"HYD\");",
+                  "        pm.expect(res.status).to.eql(\"active\");",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"origin\": \"BLR\",\n  \"destination\": \"HYD\",\n  \"threshold_price\": 2500.00\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/alerts/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "alerts", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Alerts for User A",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200 & Response is JSON\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.response.to.be.withBody;",
+                  "    pm.response.to.be.json;",
+                  "});",
+                  "",
+                  "const res = pm.response.code === 200 ? pm.response.json() : null;",
+                  "",
+                  "if (res) {",
+                  "    pm.test(\"Response is an array of alerts with valid fields\", function () {",
+                  "        pm.expect(res).to.be.an(\"array\").that.is.not.empty;",
+                  "",
+                  "        const alert = res[0];",
+                  "        pm.expect(alert).to.have.property(\"id\");",
+                  "        pm.expect(alert).to.have.property(\"origin\");",
+                  "        pm.expect(alert).to.have.property(\"destination\");",
+                  "        pm.expect(alert).to.have.property(\"status\");",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/alerts/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "alerts", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Alerts for Second User B (Empty)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200 OK and returns empty list for Bob\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    var data = pm.response.json();",
+                  "    pm.expect(Array.isArray(data)).to.be.true;",
+                  "    pm.expect(data.length).to.eql(0);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_second_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/alerts/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "alerts", ""]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "04 Deactivate",
+      "item": [
+        {
+          "name": "Alert by ID (Soft Delete)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200 & Response is JSON\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.response.to.be.withBody;",
+                  "    pm.response.to.be.json;",
+                  "});",
+                  "",
+                  "const res = pm.response.code === 200 ? pm.response.json() : null;",
+                  "",
+                  "if (res) {",
+                  "    pm.test(\"Alert successfully updated to inactive status\", function () {",
+                  "        pm.expect(res.status).to.eql(\"inactive\");",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/alerts/{{created_alert_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "alerts", "{{created_alert_id}}", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Non-Existent or Unauthorized Alert ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 404 & Response is JSON\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "    pm.response.to.be.withBody;",
+                  "    pm.response.to.be.json;",
+                  "});",
+                  "",
+                  "const res = pm.response.code === 404 ? pm.response.json() : null;",
+                  "",
+                  "if (res) {",
+                  "    pm.test(\"Response contains error detail for non-existent alert\", function () {",
+                  "        const err = res.detail || res.error;",
+                  "        pm.expect(err).to.be.a(\"string\").and.not.empty;",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/alerts/999999/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "alerts", "999999", ""]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "05 Mock Flight Price Feed",
+      "item": [
+        {
+          "name": "Mock Price DEL-BOM Valid Route",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200 & Response is JSON\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.response.to.be.withBody;",
+                  "    pm.response.to.be.json;",
+                  "});",
+                  "",
+                  "const res = pm.response.code === 200 ? pm.response.json() : null;",
+                  "",
+                  "if (res) {",
+                  "    pm.test(\"Response contains expected route and numeric price\", function () {",
+                  "        pm.expect(res.route).to.eql(\"DEL-BOM\");",
+                  "        pm.expect(res.price).to.be.a(\"number\");",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/flights/price/?route=DEL-BOM",
+              "host": ["{{base_url}}"],
+              "path": ["api", "flights", "price", ""],
+              "query": [
+                {
+                  "key": "route",
+                  "value": "DEL-BOM"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mock Price Invalid Route",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 404 & Response is JSON\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "    pm.response.to.be.withBody;",
+                  "    pm.response.to.be.json;",
+                  "});",
+                  "",
+                  "const res = pm.response.code === 404 ? pm.response.json() : null;",
+                  "",
+                  "if (res) {",
+                  "    pm.test(\"Response contains 'Route not found' error\", function () {",
+                  "        pm.expect(res.error).to.eql(\"Route not found\");",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/flights/price/?route=XYZ-ABC",
+              "host": ["{{base_url}}"],
+              "path": ["api", "flights", "price", ""],
+              "query": [
+                {
+                  "key": "route",
+                  "value": "XYZ-ABC"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "06 Admin Analytics & Access Control (RBAC)",
+      "item": [
+        {
+          "name": "Admin Summary Accessed by Regular User (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 403 & Response is JSON\", function () {",
+                  "    pm.response.to.have.status(403);",
+                  "    pm.response.to.be.withBody;",
+                  "    pm.response.to.be.json;",
+                  "});",
+                  "",
+                  "const res = pm.response.code === 403 ? pm.response.json() : null;",
+                  "",
+                  "if (res) {",
+                  "    pm.test(\"Response indicates permission denied for regular user\", function () {",
+                  "        pm.expect(res.detail).to.eql(\"You do not have permission to perform this action.\");",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/summary/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "summary", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Admin Summary Authorized for Admin (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200 & Response is JSON\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.response.to.be.withBody;",
+                  "    pm.response.to.be.json;",
+                  "});",
+                  "",
+                  "const res = pm.response.code === 200 ? pm.response.json() : null;",
+                  "",
+                  "if (res) {",
+                  "    pm.test(\"Response contains platform summary metrics\", function () {",
+                  "        pm.expect(res.total_alerts).to.be.a(\"number\");",
+                  "        pm.expect(res.active_alerts).to.be.a(\"number\");",
+                  "        pm.expect(res.triggered_alerts).to.be.a(\"number\");",
+                  "        pm.expect(res.total_notifications).to.be.a(\"number\");",
+                  "        pm.expect(res.top_routes).to.be.an(\"array\");",
+                  "    });",
+                  "",
+                  "    res.total_alerts !== undefined && pm.environment.set(\"total_alerts_count\", String(res.total_alerts));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/summary/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "summary", ""]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
