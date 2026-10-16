@@ -160,3 +160,7 @@ As required by security specifications, public registration strictly defaults al
 - **Duplicate Notification Prevention**: `send_notification` updates the alert status to `TRIGGERED` upon recording the log, ensuring subsequent Beat ticks do not fire duplicate notifications for the same alert.
 - **Role-Based Access Control**: Custom `IsAdminUser` permission checks `UserProfile.role == UserProfile.Role.ADMIN` and safely handles superusers.
 - **Strict Input Validation**: Airport codes are validated as 3-letter uppercase IATA codes, origin and destination cannot be identical, and threshold prices must be strictly greater than zero.
+
+----------------------------
+Additional url to view at Ui level inside broser is http://127.0.0.1:8000/admin/
+where super user will be created and after that login and observe realtime changes.
