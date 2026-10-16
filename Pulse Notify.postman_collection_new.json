@@ -1,0 +1,1049 @@
+{
+  "info": {
+    "_postman_id": "c869ed13-dd95-482c-ba10-5ca091fdc798",
+    "name": "Pulse Notify",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "57563309"
+  },
+  "item": [
+    {
+      "name": "01 User (Regular)",
+      "item": [
+        {
+          "name": "Register User A",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// 1. Single-block status & schema validation\r\npm.test(\"Status code is 201 & Response is JSON\", function () {\r\n    pm.response.to.have.status(201);\r\n    pm.response.to.be.withBody;\r\n    pm.response.to.be.json;\r\n});\r\n\r\n// 2. Safe parse & assertions\r\nconst res = pm.response.code === 201 ? pm.response.json() : null;\r\n\r\nif (res) {\r\n    pm.test(\"Response contains valid auth credentials\", function () {\r\n        pm.expect(res.access).to.be.a(\"string\").and.not.empty;\r\n        pm.expect(res.role).to.eql(\"user\");\r\n\r\n        // Dynamic match: matches {{username}} if set in environment/data file\r\n        const expectedUser = pm.variables.get(\"username\") || \"alice\";\r\n        if (expectedUser && res.username) {\r\n            pm.expect(res.username).to.eql(expectedUser);\r\n        }\r\n    });\r\n\r\n    // 3. Store in Environment (one liner via optional chaining)\r\n    res.access && pm.environment.set(\"user_token\", res.access);\r\n}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"username\": \"alice\",\r\n  \"password\": \"securepass123\",\r\n  \"email\": \"alice@example.com\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Register Duplicate User A",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// 1. Single-block status & schema validation\r\npm.test(\"Status code is 400 & Response is JSON\", function () {\r\n    pm.response.to.have.status(400);\r\n    pm.response.to.be.withBody;\r\n    pm.response.to.be.json;\r\n});\r\n\r\n// 2. Safe parse & assertions\r\nconst res = pm.response.code === 400 ? pm.response.json() : null;\r\n\r\nif (res) {\r\n    pm.test(\"Response contains duplicate username error\", function () {\r\n        pm.expect(res.error).to.eql(\"Username already exists\");\r\n    });\r\n}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"username\": \"alice\",\r\n  \"password\": \"anotherpass\",\r\n  \"email\": \"alice2@example.com\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login Valid Credentials User A",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// 1. Single-block status & schema validation\r\npm.test(\"Status code is 200 & Response is JSON\", function () {\r\n    pm.response.to.have.status(200);\r\n    pm.response.to.be.withBody;\r\n    pm.response.to.be.json;\r\n});\r\n\r\n// 2. Safe parse & assertions\r\nconst res = pm.response.code === 200 ? pm.response.json() : null;\r\n\r\nif (res) {\r\n    pm.test(\"Response contains valid auth credentials\", function () {\r\n        pm.expect(res.access).to.be.a(\"string\").and.not.empty;\r\n\r\n        // Dynamic match: matches {{username}} if set in environment/data file\r\n        const expectedUser = pm.variables.get(\"username\") || \"alice\";\r\n        if (expectedUser && res.username) {\r\n            pm.expect(res.username).to.eql(expectedUser);\r\n        }\r\n    });\r\n\r\n    // 3. Store in Environment (one liner via optional chaining)\r\n    res.access && pm.environment.set(\"user_token\", res.access);\r\n}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"username\": \"alice\",\r\n  \"password\": \"securepass123\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login Invalid Credentials User A",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// 1. Single-block status & schema validation\r\npm.test(\"Status code is 401 & Response is JSON\", function () {\r\n    pm.response.to.have.status(401);\r\n    pm.response.to.be.withBody;\r\n    pm.response.to.be.json;\r\n});\r\n\r\n// 2. Safe parse & assertions\r\nconst res = pm.response.code === 401 ? pm.response.json() : null;\r\n\r\nif (res) {\r\n    pm.test(\"Response contains invalid credentials error\", function () {\r\n        pm.expect(res.error).to.eql(\"Invalid credentials\");\r\n    });\r\n}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"username\": \"alice\",\r\n  \"password\": \"wrongpass\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Register Second User B",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// 1. Single-block status & schema validation\r\npm.test(\"Status code is 201 & Response is JSON\", function () {\r\n    pm.response.to.have.status(201);\r\n    pm.response.to.be.withBody;\r\n    pm.response.to.be.json;\r\n});\r\n\r\n// 2. Safe parse & assertions\r\nconst res = pm.response.code === 201 ? pm.response.json() : null;\r\n\r\nif (res) {\r\n    pm.test(\"Response contains valid auth credentials\", function () {\r\n        pm.expect(res.access).to.be.a(\"string\").and.not.empty;\r\n        pm.expect(res.role).to.eql(\"user\");\r\n\r\n        // Dynamic match: matches {{username}} if set in environment/data file\r\n        const expectedUser = pm.variables.get(\"username\") || \"alice\";\r\n        if (expectedUser && res.username) {\r\n            pm.expect(res.username).to.eql(expectedUser);\r\n        }\r\n    });\r\n\r\n    // 3. Store in Environment (one liner via optional chaining)\r\n    res.access && pm.environment.set(\"user_second_token\", res.access);\r\n}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"username\": \"bob\",\r\n  \"password\": \"bobpassword123\",\r\n  \"email\": \"bob@example.com\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register",
+                ""
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "02 Admin User Authentication",
+      "item": [
+        {
+          "name": "Register Admin User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// 1. Single-block status & schema validation\r\npm.test(\"Status code is 201 & Response is JSON\", function () {\r\n    pm.response.to.have.status(201);\r\n    pm.response.to.be.withBody;\r\n    pm.response.to.be.json;\r\n});\r\n\r\n// 2. Safe parse & assertions\r\nconst res = pm.response.code === 201 ? pm.response.json() : null;\r\n\r\nif (res) {\r\n    pm.test(\"Response contains valid admin auth credentials\", function () {\r\n        pm.expect(res.access).to.be.a(\"string\").and.not.empty;\r\n        pm.expect(res.role).to.eql(\"admin\");\r\n\r\n        // Dynamic match: matches {{admin_username}} if set in environment/data file\r\n        const expectedAdmin = pm.variables.get(\"admin_username\") || \"admin_user\";\r\n        if (expectedAdmin && res.username) {\r\n            pm.expect(res.username).to.eql(expectedAdmin);\r\n        }\r\n    });\r\n\r\n    // 3. Store in Environment (one liner via optional chaining)\r\n    res.access && pm.environment.set(\"admin_token\", res.access);\r\n}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"username\": \"admin_user\",\r\n  \"password\": \"adminpass123\",\r\n  \"email\": \"admin@example.com\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login Admin User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// 1. Single-block status & schema validation\r\npm.test(\"Status code is 200 & Response is JSON\", function () {\r\n    pm.response.to.have.status(200);\r\n    pm.response.to.be.withBody;\r\n    pm.response.to.be.json;\r\n});\r\n\r\n// 2. Safe parse & assertions\r\nconst res = pm.response.code === 200 ? pm.response.json() : null;\r\n\r\nif (res) {\r\n    pm.test(\"Response contains valid admin auth credentials\", function () {\r\n        pm.expect(res.access).to.be.a(\"string\").and.not.empty;\r\n        pm.expect(res.role).to.eql(\"admin\");\r\n\r\n        // Dynamic match: matches {{admin_username}} if set in environment/data file\r\n        const expectedAdmin = pm.variables.get(\"admin_username\") || \"admin_user\";\r\n        if (expectedAdmin && res.username) {\r\n            pm.expect(res.username).to.eql(expectedAdmin);\r\n        }\r\n    });\r\n\r\n    // 3. Store in Environment (one liner via optional chaining)\r\n    res.access && pm.environment.set(\"admin_token\", res.access);\r\n}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"username\": \"admin_user\",\r\n  \"password\": \"adminpass123\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login",
+                ""
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "03 Flight Price Alerts (Regular User)",
+      "item": [
+        {
+          "name": "Create Alert 1 D-B for Reg. User A",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// 1. Single-block status & schema validation\r\npm.test(\"Status code is 201 & Response is JSON\", function () {\r\n    pm.response.to.have.status(201);\r\n    pm.response.to.be.withBody;\r\n    pm.response.to.be.json;\r\n});\r\n\r\n// 2. Safe parse & assertions\r\nconst res = pm.response.code === 201 ? pm.response.json() : null;\r\n\r\nif (res) {\r\n    pm.test(\"Alert created with active status and valid ID\", function () {\r\n        pm.expect(res.id).to.be.a(\"number\");\r\n        pm.expect(res.origin).to.eql(\"DEL\");\r\n        pm.expect(res.destination).to.eql(\"BOM\");\r\n        pm.expect(res.status).to.eql(\"active\");\r\n    });\r\n\r\n    // 3. Store in Environment (one liner via optional chaining)\r\n    res.id && pm.environment.set(\"created_alert_id\", String(res.id));\r\n}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"origin\": \"DEL\",\r\n  \"destination\": \"BOM\",\r\n  \"threshold_price\": 4500.00\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/alerts/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "alerts",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Alert 1 D-B for Reg. User A Without Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 401 Unauthorized without token\", function () {\r\n    pm.response.to.have.status(401);\r\n});\r\n\r\npm.test(\"Error contains authentication credentials detail\", function () {\r\n    var jsonData = pm.response.json();\r\n    pm.expect(jsonData.detail).to.include(\"Authentication credentials were not provided\");\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"origin\": \"DEL\",\r\n  \"destination\": \"BOM\",\r\n  \"threshold_price\": 4500.00\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/alerts/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "alerts",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Alert 2 B-H for Reg. User A",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// 1. Single-block status & schema validation\r\npm.test(\"Status code is 201 & Response is JSON\", function () {\r\n    pm.response.to.have.status(201);\r\n    pm.response.to.be.withBody;\r\n    pm.response.to.be.json;\r\n});\r\n\r\n// 2. Safe parse & assertions\r\nconst res = pm.response.code === 201 ? pm.response.json() : null;\r\n\r\nif (res) {\r\n    pm.test(\"Alert created successfully for BLR-HYD\", function () {\r\n        pm.expect(res.id).to.be.a(\"number\");\r\n        pm.expect(res.origin).to.eql(\"BLR\");\r\n        pm.expect(res.destination).to.eql(\"HYD\");\r\n        pm.expect(res.status).to.eql(\"active\");\r\n    });\r\n\r\n}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"origin\": \"BLR\",\r\n  \"destination\": \"HYD\",\r\n  \"threshold_price\": 2500.00\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/alerts/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "alerts",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Alerts for Reg. User A",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// 1. Single-block status & schema validation\r\npm.test(\"Status code is 200 & Response is JSON\", function () {\r\n    pm.response.to.have.status(200);\r\n    pm.response.to.be.withBody;\r\n    pm.response.to.be.json;\r\n});\r\n\r\n// 2. Safe parse & assertions\r\nconst res = pm.response.code === 200 ? pm.response.json() : null;\r\n\r\nif (res) {\r\n    pm.test(\"Response is an array of alerts with valid fields\", function () {\r\n        pm.expect(res).to.be.an(\"array\").that.is.not.empty;\r\n\r\n        const alert = res[0];\r\n        pm.expect(alert).to.have.property(\"id\");\r\n        pm.expect(alert).to.have.property(\"origin\");\r\n        pm.expect(alert).to.have.property(\"destination\");\r\n        pm.expect(alert).to.have.property(\"status\");\r\n    });\r\n}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/alerts/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "alerts",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Active Alerts with Filter for Reg. User A",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200 & all alerts returned are active\", function () {\r\n    pm.response.to.have.status(200);\r\n    const res = pm.response.json();\r\n    pm.expect(res).to.be.an(\"array\");\r\n    res.forEach(item => {\r\n        pm.expect(item.status).to.eql(\"active\");\r\n    });\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/alerts/?status=active",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "alerts",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "active"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Alert Detail by ID for Reg. User A",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200 & all alerts returned are active\", function () {\r\n    pm.response.to.have.status(200);\r\n    const res = pm.response.json();\r\n    pm.expect(res).to.be.an(\"array\");\r\n    res.forEach(item => {\r\n        pm.expect(item.status).to.eql(\"active\");\r\n    });\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/alerts/?status=active",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "alerts",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "active"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Alerts for Second Reg. User B",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200 OK and returns empty list for Bob\", function () {\r\n    pm.response.to.have.status(200);\r\n    var data = pm.response.json();\r\n    pm.expect(Array.isArray(data)).to.be.true;\r\n    pm.expect(data.length).to.eql(0);\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_second_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/alerts/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "alerts",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Alert Invalid Payload (both origin & dest. same)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400 Bad Request\", function () {\r\n    pm.response.to.have.status(400);\r\n});\r\n\r\npm.test(\"Validation errors caught by serializer\", function () {\r\n    var data = pm.response.json();\r\n    // Validates either negative price or identical origin-destination error\r\n    var hasError = data.threshold_price || data.non_field_errors || data.destination;\r\n    pm.expect(hasError).to.not.be.undefined;\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"origin\": \"DEL\",\r\n  \"destination\": \"DEL\",\r\n  \"threshold_price\": 500.00\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/alerts/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "alerts",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Alert Invalid Payload (for -ve price)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400 Bad Request\", function () {\r\n    pm.response.to.have.status(400);\r\n});\r\n\r\npm.test(\"Validation errors caught by serializer\", function () {\r\n    var data = pm.response.json();\r\n    // Validates either negative price or identical origin-destination error\r\n    var hasError = data.threshold_price || data.non_field_errors || data.destination;\r\n    pm.expect(hasError).to.not.be.undefined;\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"origin\": \"DEL\",\r\n  \"destination\": \"BOM\",\r\n  \"threshold_price\": -500.00\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/alerts/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "alerts",
+                ""
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "04 Deactivate",
+      "item": [
+        {
+          "name": "Alert by ID (Soft Delete)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// 1. Single-block status & schema validation\r\npm.test(\"Status code is 200 & Response is JSON\", function () {\r\n    pm.response.to.have.status(200);\r\n    pm.response.to.be.withBody;\r\n    pm.response.to.be.json;\r\n});\r\n\r\n// 2. Safe parse & assertions\r\nconst res = pm.response.code === 200 ? pm.response.json() : null;\r\n\r\nif (res) {\r\n    pm.test(\"Alert successfully updated to inactive status\", function () {\r\n        pm.expect(res.status).to.eql(\"inactive\");\r\n    });\r\n}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/alerts/{{created_alert_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "alerts",
+                "{{created_alert_id}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Non-Existent or Unauthorized/Invalid Alert ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// 1. Single-block status & schema validation\r\npm.test(\"Status code is 404 & Response is JSON\", function () {\r\n    pm.response.to.have.status(404);\r\n    pm.response.to.be.withBody;\r\n    pm.response.to.be.json;\r\n});\r\n\r\n// 2. Safe parse & assertions\r\nconst res = pm.response.code === 404 ? pm.response.json() : null;\r\n\r\nif (res) {\r\n    pm.test(\"Response contains error detail for non-existent alert\", function () {\r\n        const err = res.detail || res.error;\r\n        pm.expect(err).to.be.a(\"string\").and.not.empty;\r\n    });\r\n}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/alerts/999999/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "alerts",
+                "999999",
+                ""
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "05 Mock Flight Price Feed",
+      "item": [
+        {
+          "name": "Mock Price D-B Valid Route",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// 1. Single-block status & schema validation\r\npm.test(\"Status code is 200 & Response is JSON\", function () {\r\n    pm.response.to.have.status(200);\r\n    pm.response.to.be.withBody;\r\n    pm.response.to.be.json;\r\n});\r\n\r\n// 2. Safe parse & assertions\r\nconst res = pm.response.code === 200 ? pm.response.json() : null;\r\n\r\nif (res) {\r\n    pm.test(\"Response contains expected route and numeric price\", function () {\r\n        pm.expect(res.route).to.eql(\"DEL-BOM\");\r\n        pm.expect(res.price).to.be.a(\"number\");\r\n    });\r\n}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/flights/price/?route=DEL-BOM",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "flights",
+                "price",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "route",
+                  "value": "DEL-BOM"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mock Price X-A Invalid Route",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// 1. Single-block status & schema validation\r\npm.test(\"Status code is 404 & Response is JSON\", function () {\r\n    pm.response.to.have.status(404);\r\n    pm.response.to.be.withBody;\r\n    pm.response.to.be.json;\r\n});\r\n\r\n// 2. Safe parse & assertions\r\nconst res = pm.response.code === 404 ? pm.response.json() : null;\r\n\r\nif (res) {\r\n    pm.test(\"Response contains 'Route not found' error\", function () {\r\n        pm.expect(res.error).to.eql(\"Route not found\");\r\n    });\r\n}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/flights/price/?route=XYZ-ABC",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "flights",
+                "price",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "route",
+                  "value": "XYZ-ABC"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "06 Admin Analytics & Access Control (RBAC)",
+      "item": [
+        {
+          "name": "Admin Summary Accessed by Regular User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// 1. Single-block status & schema validation\r\npm.test(\"Status code is 403 & Response is JSON\", function () {\r\n    pm.response.to.have.status(403);\r\n    pm.response.to.be.withBody;\r\n    pm.response.to.be.json;\r\n});\r\n\r\n// 2. Safe parse & assertions\r\nconst res = pm.response.code === 403 ? pm.response.json() : null;\r\n\r\nif (res) {\r\n    pm.test(\"Response indicates permission denied for regular user\", function () {\r\n        pm.expect(res.detail).to.eql(\"You do not have permission to perform this action.\");\r\n    });\r\n}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}",
+                "disabled": true
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_second_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/summary/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "summary",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Authorized for Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// 1. Single-block status & schema validation\r\npm.test(\"Status code is 200 & Response is JSON\", function () {\r\n    pm.response.to.have.status(200);\r\n    pm.response.to.be.withBody;\r\n    pm.response.to.be.json;\r\n});\r\n\r\n// 2. Safe parse & assertions\r\nconst res = pm.response.code === 200 ? pm.response.json() : null;\r\n\r\nif (res) {\r\n    pm.test(\"Response contains platform summary metrics\", function () {\r\n        pm.expect(res.total_alerts).to.be.a(\"number\");\r\n        pm.expect(res.active_alerts).to.be.a(\"number\");\r\n        pm.expect(res.triggered_alerts).to.be.a(\"number\");\r\n        pm.expect(res.total_notifications).to.be.a(\"number\");\r\n        pm.expect(res.top_routes).to.be.an(\"array\");\r\n    });\r\n\r\n    // 3. Store in Environment (one liner via optional chaining)\r\n    res.total_alerts !== undefined && pm.environment.set(\"total_alerts_count\", String(res.total_alerts));\r\n}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/summary/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "summary",
+                ""
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "07 Notification Logs",
+      "item": [
+        {
+          "name": "Notifications with Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Response is an array of notification logs\", function () {\r\n    var jsonData = pm.response.json();\r\n    pm.expect(Array.isArray(jsonData)).to.be.true;\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/notifications/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "notifications",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Notifications without Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 401 Unauthorized\", function () {\r\n    pm.response.to.have.status(401);\r\n});\r\n\r\npm.test(\"Authentication credentials required\", function () {\r\n    var data = pm.response.json();\r\n    pm.expect(data.detail).to.include(\"Authentication credentials were not provided\");\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": ""
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/notifications/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "notifications",
+                ""
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
