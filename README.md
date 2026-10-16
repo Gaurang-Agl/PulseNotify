@@ -129,6 +129,7 @@ Automatically triggers `check_prices` every 60 seconds.
 | `POST`   | `/api/auth/login/`                  | Public     | Authenticates user, returns fresh JWT                 |
 | `POST`   | `/api/alerts/`                      | JWT (User) | Creates price alert scoped to logged-in user          |
 | `GET`    | `/api/alerts/`                      | JWT (User) | Lists user's alerts (supports optional `?status=` filter) |
+| `GET`    | `/api/alerts/<id>/`                 | JWT (User) | Retrieves details of a specific alert owned by user   |
 | `DELETE` | `/api/alerts/<id>/`                 | JWT (User) | Deactivates alert (`status: 'inactive'`)              |
 | `GET`    | `/api/flights/price/?route=DEL-BOM` | Public     | Internal mock flight price feed                       |
 | `GET`    | `/api/admin/summary/`               | Admin Only | Platform-wide metrics & top routes                    |
