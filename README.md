@@ -164,3 +164,8 @@ As required by security specifications, public registration strictly defaults al
 ----------------------------
 Additional url to view at Ui level inside broser is http://127.0.0.1:8000/admin/
 where super-user which was created, can perform login and observe realtime changes(Users, Alerts, Notifications etc).
+<img width="1217" height="809" alt="image" src="https://github.com/user-attachments/assets/7befa5c1-e8be-4210-ac30-d448f7f3392a" />
+
+<img width="1257" height="808" alt="image" src="https://github.com/user-attachments/assets/f18b1e35-0867-42c9-b6c8-bb9372b92d75" />
+
+<img width="1246" height="666" alt="image" src="https://github.com/user-attachments/assets/199a6251-00f3-4759-9904-46ebe7594f05" />
