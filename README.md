@@ -139,6 +139,18 @@ Automatically triggers `check_prices` every 60 seconds.
 ## Testing with Postman
 Import `PulseNotify.postman_collection.json` into Postman. Set the `base_url` variable to `http://localhost:8000`. The collection contains pre-configured scenarios with automated test scripts that verify status codes and responses.
 
+### Promoting an Admin User for Testing
+As required by security specifications, public registration strictly defaults all users to `role: 'user'`. To test the `GET /api/admin/summary/` endpoint with an admin account:
+1. Register `admin_user` via Postman (Request in `02 Admin User Authentication`).
+2. Promote the user using either of these quick methods:
+   - **Terminal (1-line command)**:
+     ```bash
+     python manage.py shell -c "from django.contrib.auth.models import User; u = User.objects.get(username='admin_user'); u.profile.role='admin'; u.profile.save()"
+     ```
+   - **Django Admin UI**: Open `http://localhost:8000/admin/pulse/userprofile/` and change the role to `Admin`.
+   - **PGAdmin**: Set `role = 'admin'` in the `pulse_userprofile` table.
+3. Run `Login Admin User` in Postman to receive an admin token and access `/api/admin/summary/`.
+
 ---
 
 ## Key Design Decisions
