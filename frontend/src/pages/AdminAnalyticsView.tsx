@@ -15,13 +15,10 @@ import {
   Clock,
   Plane,
   Tag,
-  Trash2,
-  AlertTriangle,
 } from 'lucide-react';
 import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
-import { Modal } from '../components/common/Modal';
-import { getAdminSummaryApi, clearAllPlatformDataApi } from '../api/admin';
+import { getAdminSummaryApi } from '../api/admin';
 import { getQuotaTelemetryApi, resetQuotaApi } from '../api/quota';
 import { AdminSummaryResponse, QuotaTelemetry } from '../types';
 import { formatCurrencyINR, formatDate } from '../utils/formatters';
@@ -37,24 +34,6 @@ export const AdminAnalyticsView: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [hasCopied, setHasCopied] = useState<boolean>(false);
   const [isResettingQuota, setIsResettingQuota] = useState<boolean>(false);
-  const [isClearModalOpen, setIsClearModalOpen] = useState<boolean>(false);
-  const [isClearing, setIsClearing] = useState<boolean>(false);
-
-  const handleClearAllData = async () => {
-    setIsClearing(true);
-    try {
-      const res = await clearAllPlatformDataApi();
-      success(
-        `Wiped all platform data! Removed ${res.cleared.alerts} alerts, ${res.cleared.notifications} notifications.`
-      );
-      setIsClearModalOpen(false);
-      fetchAdminSummary();
-    } catch (err) {
-      error(parseApiError(err));
-    } finally {
-      setIsClearing(false);
-    }
-  };
 
   const fetchAdminSummary = useCallback(async () => {
     if (!isAdmin) {
@@ -195,17 +174,6 @@ export const AdminAnalyticsView: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2.5">
-          <Button
-            variant="danger"
-            size="sm"
-            onClick={() => setIsClearModalOpen(true)}
-            icon={<Trash2 className="w-3.5 h-3.5" />}
-            title="Wipe all platform alerts, notifications, and quota logs across all users"
-            className="border border-rose-500/40 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300"
-          >
-            Clear All Data
-          </Button>
-
           <Button
             variant="secondary"
             size="sm"
@@ -677,47 +645,6 @@ export const AdminAnalyticsView: React.FC = () => {
           )}
         </>
       ) : null}
-
-      {/* Confirmation Modal */}
-      <Modal
-        isOpen={isClearModalOpen}
-        onClose={() => setIsClearModalOpen(false)}
-        title="Confirm Platform Data Wipe"
-        subtitle="Irreversible system maintenance action for administrators"
-        maxWidth="sm"
-      >
-        <div className="space-y-4">
-          <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-start gap-3 text-xs text-rose-200">
-            <AlertTriangle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
-            <div className="space-y-1">
-              <span className="font-bold text-rose-300 block text-sm">Wipe All Alerts & Notifications?</span>
-              <p className="leading-relaxed text-rose-200/90 text-xs">
-                This will permanently delete <strong>all Price Alerts</strong> and <strong>all Notification Logs</strong> across <strong>every user</strong> (both regular travelers and administrators). It will also reset monthly quota consumption to 0 and flush Redis price cache.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-800">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsClearModalOpen(false)}
-              disabled={isClearing}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="danger"
-              size="sm"
-              onClick={handleClearAllData}
-              isLoading={isClearing}
-              icon={<Trash2 className="w-3.5 h-3.5" />}
-            >
-              Yes, Wipe All Data
-            </Button>
-          </div>
-        </div>
-      </Modal>
     </div>
   );
 };

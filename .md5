@@ -47,7 +47,7 @@ f80661f68c6e772d1fcacf381c59bf0e  frontend/src/context/TelemetryContext.tsx
 be4782da218b456530351f415ba5e7ff  frontend/src/context/ToastContext.tsx
 622a2680dad8e538a3a897f8c6054da7  frontend/src/index.css
 aa122bdcf833a2c00fdf9ca8e5348675  frontend/src/main.tsx
-c28ea4200ff3b8b4d9b837c5ee7707fe  frontend/src/pages/AdminAnalyticsView.tsx
+93ed4bbf237772d46e0f5aa9192fc7ed  frontend/src/pages/AdminAnalyticsView.tsx
 303ff2494c0014a83e0d541593eedef9  frontend/src/pages/AlertsManagerView.tsx
 9a03e910d7886e2a67f2493cdf50c06f  frontend/src/pages/FlightRadarView.tsx
 2774eb133e05a92b28fc23ba7c94e5a0  frontend/src/pages/NotificationsView.tsx
