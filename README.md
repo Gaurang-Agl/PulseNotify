@@ -80,9 +80,14 @@ PulseNotify has evolved through three comprehensive architectural iterations:
 - **Real-Time Dynamic Route Guidance in Alert Modal**:
   - Modal cross-references the entered budget against the route's configured boundaries.
   - Warns if threshold is below the route minimum (e.g. `< ₹3,000` for DEL-BOM) or above the route peak (`> ₹7,000`), while preserving user freedom to proceed.
-- **Global "Clear Data" Button in Header & Admin Hub**:
-  - Prominent "Clear Data" button in the Navbar header and Admin Hub.
-  - Opens a confirmation safety modal to wipe all alerts, notifications, and quota logs across all users (regular and admin), reset monthly quota, and flush Redis cache.
+- **Global "Clear Data" Header Action with Terminal Log Auto-Purge**:
+  - Streamlined single "Clear Data" button in the sticky Navbar header (exclusive to authenticated Admin users; redundant inner button removed).
+  - Opens a confirmation safety modal to wipe all alerts, notifications, and quota logs across all users (regular and admin), reset monthly quota to 0, and flush Redis cache.
+  - Automatically executes an OS terminal console clear (`cls` on Windows / `clear` on Unix) in the unified runner, wiping previous API request logs and streaming a fresh, clean console header.
+- **Instant Zero-Latency Alert Evaluation on Creation & Live Feed Synchronization**:
+  - *Instant Creation Hook*: When a traveler creates an alert whose threshold is already met by the live route fare (e.g. creating BLR-HYD target ₹2,600 when flight is ₹2,410), the engine immediately triggers the alert and writes the `NotificationLog` in 0ms, returning `status: "triggered"` in the HTTP 201 response.
+  - *Synchronous PostgreSQL State Flip*: Eliminates race conditions where frontend queries could fetch an alert before Celery finished background worker dequeuing.
+  - *Real-Time Card Threshold Synchronization*: Flight Radar cards evaluate live card pricing in real-time, instantly rendering `[TRIGGERED!]` badges with zero visual lag.
 - **Anti-Flicker Toast Deduplication & Stacking Cap**:
   - Deduplicates identical alert messages and caps visible notifications to max 3, eliminating vertical jitter during rapid scans.
 - **React Portal Modal Stacking Fix**:
@@ -201,14 +206,17 @@ PulseNotify utilizes a synchronized **dual-trigger topology** paired with a shar
 
 1. **Trigger Path A: Instant Event-Driven Ingestion Hook (0ms Latency)**
    - Whenever any traveler, admin, or UI client calls `GET /api/flights/price/?route={ROUTE}`, `evaluate_alerts_for_price()` executes synchronously on the discovered fare.
-   - Matching active alerts are identified immediately and dispatched to Celery via `send_notification.delay()`. The HTTP response returns `triggered_alerts` in 0 milliseconds.
+   - Matching active alerts are identified immediately, their database state is transitioned synchronously to `TRIGGERED`, and background tasks are dispatched to Celery. The HTTP response returns `triggered_alerts` in 0 milliseconds.
 2. **Trigger Path B: Celery Beat 30-Second Periodic Fallback**
    - Configured in `CELERY_BEAT_SCHEDULE` with an interval of `30.0` seconds (`check-flight-prices-every-30-seconds`).
    - Ensures continuous background evaluation even when no users are browsing the site.
-3. **Redis 7 Shared Route Snapshot Cache (`TTL=30s`)**
+3. **Trigger Path C: Instant Creation Hook (0ms Zero-Latency on Alert Creation)**
+   - Whenever an alert is created (`POST /api/alerts/`), the backend immediately inspects the route's current live fare.
+   - If the current fare is already less than or equal to the desired threshold, the alert triggers immediately on creation, writes the `NotificationLog` audit record, and returns `status: "triggered"`. The traveler sees `[TRIGGERED!]` with 0ms delay.
+4. **Redis 7 Shared Route Snapshot Cache (`TTL=30s`)**
    - Route prices are cached under key `pulsenotify:flight_price:{ROUTE}` with a 30-second TTL.
    - Guarantees that the frontend Flight Radar and Celery worker evaluate identical prices, preventing race conditions.
-4. **On-Demand "Scan Now" Force-Refresh (`force_refresh=True` / `?refresh=true`)**
+5. **On-Demand "Scan Now" Force-Refresh (`force_refresh=True` / `?refresh=true`)**
    - Clicking "Scan Now" or hitting the 30-second countdown in Flight Radar invokes `GET /api/flights/price/?route=...&refresh=true`.
    - `CachedFlightProvider` invalidates/bypasses the Redis cache, calculates a fresh fluctuating fare, overwrites the cache with a fresh 30s TTL, and triggers instant alert cross-checking.
 
@@ -238,6 +246,16 @@ Suppose a user has two alerts on `DEL-BOM`:
   - Both alerts enqueue separate `send_notification.delay(alert_id, price)` Celery tasks.
   - The Celery worker processes both tasks independently, inserting distinct `NotificationLog` audit records with individual savings calculations.
   - Both alerts transition atomically from `ACTIVE` to `TRIGGERED`. On subsequent 30s scans, neither alert is re-triggered (anti-spam idempotency).
+
+**Scenario 3: Alert Created When Live Price Is Already Below Threshold**
+- Suppose `BLR-HYD` is currently trading at **₹2,410**.
+- A traveler creates an alert with threshold **₹2,600**.
+- Condition ($2,410 \le 2,600$): **MET IMMEDIATELY AT CREATION**.
+- **System Behavior**:
+  - `perform_create()` checks `get_route_price()` immediately.
+  - Generates `NotificationLog` with ₹190 instant savings.
+  - Flips alert status to `TRIGGERED` in 0 milliseconds and returns `status: "triggered"` in the HTTP 201 response.
+  - Zero-latency celebratory toast displayed; Flight Radar and Alerts Hub immediately render `[TRIGGERED! ≤₹2,600]` with 0 seconds delay.
 
 ---
 
