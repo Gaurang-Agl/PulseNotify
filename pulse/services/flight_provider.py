@@ -40,14 +40,14 @@ class FlightPriceResult:
 
 
 MOCK_PRICE_RANGES = {
-    "DEL-BOM": (3200, 6800),
-    "BLR-HYD": (1800, 3900),
-    "DEL-BLR": (4200, 8900),
-    "BOM-GOA": (2100, 4800),
-    "BOM-DEL": (3400, 6900),
-    "HYD-BLR": (1900, 4100),
-    "BLR-DEL": (4100, 8800),
-    "GOA-BOM": (2200, 4900),
+    "DEL-BOM": (3000, 7000),
+    "BLR-HYD": (1500, 4000),
+    "DEL-BLR": (4000, 9000),
+    "BOM-GOA": (2000, 5000),
+    "BOM-DEL": (3000, 7000),
+    "HYD-BLR": (1500, 4000),
+    "BLR-DEL": (4000, 9000),
+    "GOA-BOM": (2000, 5000),
 }
 
 MOCK_AIRLINES = [

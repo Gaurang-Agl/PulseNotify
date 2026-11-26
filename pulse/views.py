@@ -160,12 +160,9 @@ class PriceAlertDetailView(APIView):
         return Response({"status": "inactive"}, status=status.HTTP_200_OK)
 
 
-MOCK_PRICES = {
-    "DEL-BOM": (3000, 7000),
-    "BLR-HYD": (1500, 4000),
-    "DEL-BLR": (4000, 9000),
-    "BOM-GOA": (2000, 5000),
-}
+from .services.flight_provider import get_flight_provider, MOCK_PRICE_RANGES
+
+MOCK_PRICES = MOCK_PRICE_RANGES
 
 
 class FlightPriceView(APIView):
@@ -225,12 +222,16 @@ class FlightPriceView(APIView):
             current_price=flight_result.price,
         )
 
+        price_bounds = MOCK_PRICE_RANGES.get(flight_result.route, (2000, 7000))
+
         return Response(
             {
                 "route": flight_result.route,
                 "origin": flight_result.origin,
                 "destination": flight_result.destination,
                 "price": flight_result.price,
+                "min_price": price_bounds[0],
+                "max_price": price_bounds[1],
                 "provider": flight_result.provider,
                 "is_real_time": flight_result.is_real_time,
                 "airline": flight_result.airline,
@@ -375,6 +376,49 @@ class AdminSummaryView(APIView):
                 "total_notifications": total_notifications,
                 "top_routes": top_routes,
                 "alerts": alerts_list,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class AdminClearDataView(APIView):
+    """
+    POST /api/admin/clear-data/
+    Wipes all price alerts, notifications, and quota alert logs across all users (regular and admin),
+    resets the monthly API quota counter to 0, and flushes the Redis cache.
+    """
+    permission_classes = [IsAdminUser]
+
+    def post(self, request):
+        from .models import PriceAlert, NotificationLog, QuotaAlertLog
+        from django.core.cache import cache
+        from django.conf import settings
+        import redis
+
+        notif_count = NotificationLog.objects.all().delete()[0]
+        alert_count = PriceAlert.objects.all().delete()[0]
+        quota_logs_count = QuotaAlertLog.objects.all().delete()[0]
+        reset_quota_counter()
+
+        try:
+            cache.clear()
+            redis_url = getattr(settings, "REDIS_URL", "redis://127.0.0.1:6379/0")
+            r = redis.Redis.from_url(redis_url)
+            r.flushdb()
+            redis_ok = True
+        except Exception:
+            redis_ok = False
+
+        return Response(
+            {
+                "message": "All platform data (alerts, notifications, quota logs) wiped successfully.",
+                "cleared": {
+                    "alerts": alert_count,
+                    "notifications": notif_count,
+                    "quota_logs": quota_logs_count,
+                    "quota_counter_reset": True,
+                    "redis_flushed": redis_ok,
+                },
             },
             status=status.HTTP_200_OK,
         )

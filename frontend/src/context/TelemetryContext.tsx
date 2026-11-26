@@ -1,4 +1,4 @@
-﻿import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { getFlightPriceApi, SUPPORTED_ROUTES, ROUTE_AIRPORTS } from '../api/flights';
 import { formatCurrencyINR } from '../utils/formatters';
 import { useToast } from './ToastContext';
@@ -13,6 +13,8 @@ export interface TelemetryRouteData {
   isRealTime: boolean;
   airline: string;
   flightNumber: string;
+  minPrice?: number;
+  maxPrice?: number;
 }
 
 interface TelemetryContextValue {
@@ -53,10 +55,12 @@ export const TelemetryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         SUPPORTED_ROUTES.map(async (route) => {
           const res = await getFlightPriceApi(route, isManual);
           const meta = ROUTE_AIRPORTS[route];
+          const minVal = res.min_price ?? meta.min;
+          const maxVal = res.max_price ?? meta.max;
           let status: 'low' | 'mid' | 'high' = 'mid';
-          if (res.price <= meta.min + (meta.max - meta.min) * 0.35) {
+          if (res.price <= minVal + (maxVal - minVal) * 0.35) {
             status = 'low';
-          } else if (res.price >= meta.max - (meta.max - meta.min) * 0.35) {
+          } else if (res.price >= maxVal - (maxVal - minVal) * 0.35) {
             status = 'high';
           }
 
@@ -70,6 +74,8 @@ export const TelemetryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             updates[route] = {
               route,
               price: res.price,
+              minPrice: minVal,
+              maxPrice: maxVal,
               prevPrice: prevEntry ? prevEntry.price : null,
               timestamp: new Date(),
               status,
@@ -85,8 +91,8 @@ export const TelemetryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
       setCountdown(30);
 
-      if (isManual) {
-        info('Fresh real-time flight prices scanned and evaluated.');
+      if (isManual && newlyTriggeredCount === 0) {
+        info('Flight prices refreshed across all routes.');
       }
 
       if (newlyTriggeredCount > 0) {

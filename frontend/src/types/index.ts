@@ -61,6 +61,8 @@ export interface FlightQuotaStats {
 export interface FlightPriceResponse {
   route: string;
   price: number;
+  min_price?: number;
+  max_price?: number;
   origin?: string;
   destination?: string;
   provider?: string;

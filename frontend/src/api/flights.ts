@@ -8,6 +8,10 @@ export const ROUTE_AIRPORTS: Record<string, { originName: string; destName: stri
   'BLR-HYD': { originName: 'Bengaluru (BLR)', destName: 'Hyderabad (HYD)', min: 1500, max: 4000 },
   'DEL-BLR': { originName: 'Delhi (DEL)', destName: 'Bengaluru (BLR)', min: 4000, max: 9000 },
   'BOM-GOA': { originName: 'Mumbai (BOM)', destName: 'Goa (GOA)', min: 2000, max: 5000 },
+  'BOM-DEL': { originName: 'Mumbai (BOM)', destName: 'Delhi (DEL)', min: 3000, max: 7000 },
+  'HYD-BLR': { originName: 'Hyderabad (HYD)', destName: 'Bengaluru (BLR)', min: 1500, max: 4000 },
+  'BLR-DEL': { originName: 'Bengaluru (BLR)', destName: 'Delhi (DEL)', min: 4000, max: 9000 },
+  'GOA-BOM': { originName: 'Goa (GOA)', destName: 'Mumbai (BOM)', min: 2000, max: 5000 },
 };
 
 export async function getFlightPriceApi(route: string, forceRefresh: boolean = false): Promise<FlightPriceResponse> {

@@ -108,7 +108,9 @@ export const FlightRadarView: React.FC<FlightRadarViewProps> = ({
           const price = data ? data.price : meta.min;
           const prev = data ? data.prevPrice : null;
           const diff = prev ? price - prev : 0;
-          const percentOfRange = Math.round(((price - meta.min) / (meta.max - meta.min)) * 100);
+          const routeMin = data?.minPrice ?? meta.min;
+          const routeMax = data?.maxPrice ?? meta.max;
+          const percentOfRange = Math.round(((price - routeMin) / (routeMax - routeMin)) * 100);
 
           // Check if the user has active or triggered alerts for this route (supports multiple alerts)
           const routeAlerts = userAlerts.filter(
@@ -255,9 +257,9 @@ export const FlightRadarView: React.FC<FlightRadarViewProps> = ({
               {/* Price Range Visualizer */}
               <div className="space-y-1.5 mb-5 bg-slate-950/60 p-3 rounded-lg border border-slate-800/80">
                 <div className="flex items-center justify-between text-[11px] font-mono text-slate-400">
-                  <span>Range: {formatCurrencyINR(meta.min)}</span>
+                  <span>Range: {formatCurrencyINR(routeMin)}</span>
                   <span>{percentOfRange}% of peak</span>
-                  <span>{formatCurrencyINR(meta.max)}</span>
+                  <span>{formatCurrencyINR(routeMax)}</span>
                 </div>
                 <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden relative">
                   <div

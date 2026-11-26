@@ -7,6 +7,8 @@ import {
   ArrowRight,
   RefreshCw,
   Sparkles,
+  AlertTriangle,
+  CheckCircle2,
 } from 'lucide-react';
 import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
@@ -18,6 +20,7 @@ import {
   deactivateAlertApi,
   getAlertDetailApi,
 } from '../api/alerts';
+import { ROUTE_AIRPORTS } from '../api/flights';
 import { PriceAlert } from '../types';
 import { formatCurrencyINR, formatDate } from '../utils/formatters';
 import { getAlertStatusBadge } from '../utils/badges';
@@ -39,7 +42,7 @@ export const AlertsManagerView: React.FC<AlertsManagerViewProps> = ({
   onClearInitialRoute,
 }) => {
   const { isAuthenticated, openAuthModal } = useAuth();
-  const { success, error } = useToast();
+  const { success, error, warning } = useToast();
 
   const [alerts, setAlerts] = useState<PriceAlert[]>([]);
   const [selectedFilter, setSelectedFilter] = useState<string>('all');
@@ -116,7 +119,17 @@ export const AlertsManagerView: React.FC<AlertsManagerViewProps> = ({
         destination: cleanDest,
         threshold_price: numericPrice,
       });
-      success(`Price alert created for ${created.origin}-${created.destination} @ ${formatCurrencyINR(created.threshold_price)}`);
+
+      const routeKey = `${cleanOrigin}-${cleanDest}`;
+      const routeMeta = ROUTE_AIRPORTS[routeKey];
+      if (routeMeta && numericPrice < routeMeta.min) {
+        warning(`Alert saved @ ${formatCurrencyINR(numericPrice)} (Note: Below route minimum of ${formatCurrencyINR(routeMeta.min)}).`);
+      } else if (routeMeta && numericPrice > routeMeta.max) {
+        warning(`Alert saved @ ${formatCurrencyINR(numericPrice)} (Note: Above route maximum of ${formatCurrencyINR(routeMeta.max)}).`);
+      } else {
+        success(`Price alert created for ${created.origin}-${created.destination} @ ${formatCurrencyINR(created.threshold_price)}`);
+      }
+
       setIsCreateModalOpen(false);
       setOrigin('');
       setDestination('');
@@ -386,29 +399,87 @@ export const AlertsManagerView: React.FC<AlertsManagerViewProps> = ({
             </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5 font-mono">
-              Maximum Threshold Price (₹ INR)
-            </label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-mono font-bold">
-                ₹
-              </span>
-              <input
-                type="number"
-                required
-                min={1}
-                step="any"
-                value={threshold}
-                onChange={(e) => setThreshold(e.target.value)}
-                placeholder="4500"
-                className="w-full bg-slate-950/80 border border-slate-700 rounded-lg pl-8 pr-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500 font-mono font-semibold"
-              />
-            </div>
-            <p className="text-[11px] text-slate-500 mt-1">
-              Trigger condition: Fired when live price is strictly less than or equal to this budget.
-            </p>
-          </div>
+          {(() => {
+            const currentRouteKey = `${origin.trim().toUpperCase()}-${destination.trim().toUpperCase()}`;
+            const routeMeta = ROUTE_AIRPORTS[currentRouteKey];
+            const numThreshold = parseFloat(threshold);
+            const hasThreshold = !isNaN(numThreshold) && numThreshold > 0;
+
+            return (
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider font-mono">
+                    Maximum Threshold Price (₹ INR)
+                  </label>
+                  {routeMeta && (
+                    <span className="text-[11px] font-mono text-slate-400">
+                      Fare Bracket: <strong className="text-slate-200">{formatCurrencyINR(routeMeta.min)} – {formatCurrencyINR(routeMeta.max)}</strong>
+                    </span>
+                  )}
+                </div>
+
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-mono font-bold">
+                    ₹
+                  </span>
+                  <input
+                    type="number"
+                    required
+                    min={1}
+                    step="any"
+                    value={threshold}
+                    onChange={(e) => setThreshold(e.target.value)}
+                    placeholder={routeMeta ? String(Math.round((routeMeta.min + routeMeta.max) / 2)) : "4500"}
+                    className={`w-full bg-slate-950/80 border rounded-lg pl-8 pr-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none font-mono font-semibold transition-colors ${
+                      routeMeta && hasThreshold && (numThreshold < routeMeta.min || numThreshold > routeMeta.max)
+                        ? 'border-amber-500/70 focus:border-amber-400'
+                        : 'border-slate-700 focus:border-sky-500'
+                    }`}
+                  />
+                </div>
+
+                {/* Real-time Dynamic Advisory Guidance */}
+                {routeMeta && hasThreshold && numThreshold < routeMeta.min && (
+                  <div className="mt-2.5 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-start gap-2.5 text-xs text-amber-200 animate-fadeIn">
+                    <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                    <div className="space-y-0.5">
+                      <span className="font-bold text-amber-300 block">Notice: Price Below Route Minimum</span>
+                      <p className="text-[11px] leading-relaxed text-amber-200/90">
+                        The minimum ticket fare for <strong className="text-white font-mono">{currentRouteKey}</strong> starts at <strong className="text-white font-mono">{formatCurrencyINR(routeMeta.min)}</strong>. Setting an alert below this falls outside the flight's pricing bracket and will not be able to trigger. Consider increasing your alert price to at least <strong className="text-white font-mono">{formatCurrencyINR(routeMeta.min)}</strong>.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {routeMeta && hasThreshold && numThreshold > routeMeta.max && (
+                  <div className="mt-2.5 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-start gap-2.5 text-xs text-amber-200 animate-fadeIn">
+                    <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                    <div className="space-y-0.5">
+                      <span className="font-bold text-amber-300 block">Notice: Price Above Route Maximum</span>
+                      <p className="text-[11px] leading-relaxed text-amber-200/90">
+                        The maximum ticket fare for <strong className="text-white font-mono">{currentRouteKey}</strong> is capped at <strong className="text-white font-mono">{formatCurrencyINR(routeMeta.max)}</strong>. Setting an alert above this falls outside the flight's price ceiling. Consider setting an alert price within the viable bracket of <strong className="text-white font-mono">{formatCurrencyINR(routeMeta.min)} to {formatCurrencyINR(routeMeta.max)}</strong>.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {routeMeta && hasThreshold && numThreshold >= routeMeta.min && numThreshold <= routeMeta.max && (
+                  <div className="mt-2.5 p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-start gap-2 text-xs text-emerald-200 animate-fadeIn">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                    <p className="text-[11px] text-emerald-200/90">
+                      <strong className="text-emerald-300">Optimal Target:</strong> Within viable route range (<strong className="font-mono text-white">{formatCurrencyINR(routeMeta.min)} – {formatCurrencyINR(routeMeta.max)}</strong>). Triggers when price drops ≤ <strong className="font-mono text-white">{formatCurrencyINR(numThreshold)}</strong>.
+                    </p>
+                  </div>
+                )}
+
+                {!hasThreshold && (
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    Trigger condition: Fired when live price is strictly less than or equal to this budget.
+                  </p>
+                )}
+              </div>
+            );
+          })()}
 
           <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
             <Button

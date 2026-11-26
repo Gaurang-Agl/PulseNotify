@@ -62,8 +62,11 @@ const DashboardContent: React.FC = () => {
     });
   }, [registerOnPriceTrigger]);
 
+  const [refreshKey, setRefreshKey] = useState<number>(0);
+
   const handleRefreshAll = async () => {
     setIsRefreshing(true);
+    setRefreshKey((k) => k + 1);
     await fetchBadgeCounts();
     setTimeout(() => setIsRefreshing(false), 800);
   };
@@ -97,6 +100,7 @@ const DashboardContent: React.FC = () => {
           <div className="max-w-7xl mx-auto">
             {activeTab === 'radar' && (
               <FlightRadarView
+                key={refreshKey}
                 onSelectRouteForAlert={handleSelectRouteForAlert}
                 onRefreshBadges={fetchBadgeCounts}
                 onNavigateToAlerts={() => setActiveTab('alerts')}
@@ -104,6 +108,7 @@ const DashboardContent: React.FC = () => {
             )}
             {activeTab === 'alerts' && (
               <AlertsManagerView
+                key={refreshKey}
                 initialOrigin={prefillOrigin}
                 initialDestination={prefillDest}
                 initialThreshold={prefillThreshold}
@@ -114,9 +119,9 @@ const DashboardContent: React.FC = () => {
                 }}
               />
             )}
-            {activeTab === 'notifications' && <NotificationsView />}
-            {activeTab === 'admin' && <AdminAnalyticsView />}
-            {activeTab === 'simulator' && <SimulatorView />}
+            {activeTab === 'notifications' && <NotificationsView key={refreshKey} />}
+            {activeTab === 'admin' && <AdminAnalyticsView key={refreshKey} />}
+            {activeTab === 'simulator' && <SimulatorView key={refreshKey} />}
             {activeTab === 'docs' && <SystemGuideView />}
           </div>
         </main>

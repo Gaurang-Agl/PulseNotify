@@ -2,6 +2,7 @@ from django.urls import path
 
 from .views import (
     AdminSummaryView,
+    AdminClearDataView,
     ApiQuotaSimulateView,
     ApiQuotaView,
     FlightPriceView,
@@ -28,6 +29,7 @@ urlpatterns = [
     path("admin/summary/", AdminSummaryView.as_view(), name="admin-summary"),
     path("admin/quota/", ApiQuotaView.as_view(), name="admin-quota"),
     path("admin/quota/simulate/", ApiQuotaSimulateView.as_view(), name="admin-quota-simulate"),
+    path("admin/clear-data/", AdminClearDataView.as_view(), name="admin-clear-data"),
 
     # Notification endpoints
     path("notifications/", NotificationListView.as_view(), name="notification-list"),

@@ -91,6 +91,8 @@ def classify_endpoint(path: str):
         return API_COLORS["NOTIFS"]
     elif "/api/auth" in path:
         return API_COLORS["AUTH"]
+    elif "/api/admin/clear-data" in path:
+        return {"color": FG_RED, "tag": "[API:CLEAR ]", "desc": "Wipe Platform Data"}
     elif "/api/admin/quota" in path:
         return API_COLORS["QUOTA"]
     elif "/api/admin" in path:

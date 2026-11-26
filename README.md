@@ -11,6 +11,82 @@ It replicates the price-tracking engines behind **Google Flights**, **Skyscanner
 5. **Multi-Alert Route Tagging & Tiered Triggering**: Multiple travelers (or a single traveler with multiple budget levels) can monitor the same route. If a fare drops below multiple thresholds, each alert triggers independently with separate audit logs and savings calculations.
 6. **Asynchronous Dispatch & Anti-Spam Idempotency**: Celery dispatches `send_notification.delay()`, records an immutable audit log, and transitions the alert status from `ACTIVE` to `TRIGGERED` to prevent duplicate alert spam.
 7. **Enterprise Security & Quota Telemetry**: Row-level multi-tenant isolation cloaks other users' alerts with HTTP 404, while administrators monitor real-time platform analytics and third-party API quota milestones (25%, 50%, 60%, 70%, 80%, and 90%).
+8. **Unified 1-Click Console Manager**: All 5 services (Docker Postgres/Redis, Django API, Celery Worker, Celery Beat, Vite Frontend) can be triggered from **1 single Desktop shortcut** with color-coded log bifurcation and zero terminal clutter.
+9. **Global Platform Data Reset**: Administrators can wipe all platform data (alerts, notifications, quota logs) directly from the header with a safety confirmation modal.
+
+---
+
+## Evolution & Release Version Matrix
+
+PulseNotify has evolved through three comprehensive architectural iterations:
+
+```
+┌─────────────────────────────────┐      ┌─────────────────────────────────┐      ┌─────────────────────────────────┐
+│           VERSION 1.0           │      │           VERSION 2.0           │      │      VERSION 3.0 (CURRENT)      │
+│     Core Distributed MVP        │ ───> │   Dual-Trigger & Telemetry      │ ───> │  Console Manager & Data Sync    │
+│                                 │      │                                 │      │                                 │
+│ • DRF + PostgreSQL 17 + Redis 7 │      │ • 0ms Synchronous Ingestion     │      │ • 1-Click All-in-One Console    │
+│ • Celery Worker (solo pool)     │      │ • 30s Celery Beat Scheduler     │      │ • Real-time API Color Streams   │
+│ • Active / Triggered State Mach.│      │ • Redis 30s Snapshot Cache      │      │ • Authentic Route Fare Sync     │
+│ • 404 IDOR Multi-Tenant Cloak   │      │ • Quota Milestone Trapping      │      │ • Dynamic Alert Fare Guidance   │
+│ • O(N) -> O(1) Route Batching   │      │ • Full React 18 + Vite 6 SPA    │      │ • Global Admin Data Reset       │
+└─────────────────────────────────┘      └─────────────────────────────────┘      └─────────────────────────────────┘
+```
+
+### Version 1.0 — Core Distributed MVP Foundation
+- **Django REST Framework + SimpleJWT**: Secure authentication issuing 7-day tokens; automatic `UserProfile` (`role='user'`) creation via post-save signals.
+- **Relational Persistence**: PostgreSQL 17 backing users, profiles, price alerts, and immutable notification audit logs.
+- **Alert State Machine**: `ACTIVE` $\to$ `TRIGGERED` $\to$ `INACTIVE` state flow with soft-deletion preserving historical analytics.
+- **Anti-IDOR Multi-Tenant Scoping**: All alert endpoints strictly scoped to `request.user`. Accessing another user's alert ID returns HTTP 404 Not Found rather than 403 Forbidden, preventing ID enumeration.
+- **Route Aggregation ($O(N) \to O(1)$)**: Batching active alerts by distinct route pairs so $N$ users monitoring `DEL-BOM` require only 1 flight lookup.
+- **Background Worker**: Celery Worker configured with `--pool=solo` for safe Windows execution without process fork limitations.
+
+### Version 2.0 — Dual-Trigger Engine & Telemetry Intelligence
+- **Dual-Trigger Architecture**:
+  - *Path A (Instant Hook)*: `evaluate_alerts_for_price()` executes in 0ms synchronously on price ingestion, firing immediate notifications.
+  - *Path B (Periodic Fallback)*: Celery Beat ticks every 30.0s (`check-flight-prices-every-30-seconds`) for autonomous background monitoring.
+- **Shared Redis Price Snapshot**: 30-second TTL cache (`pulsenotify:flight_price:{ROUTE}`) ensuring the frontend radar and background worker always agree on identical prices.
+- **On-Demand "Scan Now" Force-Refresh**: `GET /api/flights/price/?route=...&refresh=true` invalidates the Redis cache on-demand for immediate fare fluctuation.
+- **Third-Party API Quota Milestone Trapping**: Real-time monthly consumption tracking against external provider limits (Amadeus/Kiwi) with immutable milestone audit records at 25%, 50%, 60%, 70%, 80%, and 90%.
+- **Deterministic Quota Simulator**: `/api/admin/quota/simulate/` endpoint for automated CI/CD and manual quota milestone testing.
+- **Multi-Alert Route Tagging**: Route cards dynamically show badge counters (`2 Alerts Active`, `Triggered!`) and individual price target chips (`≤₹4,000`, `≤₹3,500`).
+- **React 18 + Vite 6 Single-Page Application**: Flight Radar, Alerts Manager, Notifications Center, Admin Intelligence Hub, Simulator View, and System Documentation.
+
+### Version 3.0 (Latest Release) — Unified Console Manager, Data Sync & Admin Control
+- **1-Click All-in-One Console Runner (`run_all.py` / Desktop Shortcut)**:
+  - Eliminates the need to open 5 separate terminal windows.
+  - Automatically boots Docker Desktop, starts PostgreSQL & Redis containers, runs Django server, launches Celery Worker (`--pool=solo`), launches Celery Beat (30s schedule), and starts Vite frontend in **one unified window**.
+  - Automatically pops open `http://localhost:5173` in your default browser.
+  - Traps `Ctrl + C` and performs a clean process-tree termination (`taskkill /F /T`) so zero orphaned node/python processes remain.
+- **Real-Time API Call Color Bifurcation**:
+  - Every API call in the unified terminal stream is styled in a distinct, dedicated color theme:
+    - `[API:RADAR ]` (Electric Cyan) — Flight price polling & ingestion.
+    - `[API:ALERTS]` (Golden Amber) — Price alerts creation, listing, deletion.
+    - `[API:NOTIFS]` (Vivid Purple) — Notification audit trail.
+    - `[API:AUTH  ]` (Royal Blue) — User & Admin JWT authentication.
+    - `[API:QUOTA ]` (Bright Orange) — API quota consumption & milestones.
+    - `[API:ADMIN ]` (Hot Pink) — Admin platform analytics.
+    - `[API:CLEAR ]` (Bold Red) — Global platform data wipe.
+    - `[API:DJANGO]` (Slate White) — Django Admin portal.
+- **Enhanced Celery Worker Visuals**:
+  - Reformatted worker logs with task received badges (`⚡ DISPATCH RECEIVED`, `⚙ SCHEDULED ROUTE CHECK`), task completion times (`✓ SUCCEEDED in 0.022s`), and alert notification highlights.
+- **100% Authentic Fare Boundary Synchronization**:
+  - Unified `flight_provider.py` ranges to authentically match advertised numbers across all routes:
+    - `DEL-BOM`: **₹3,000 – ₹7,000**
+    - `BOM-GOA`: **₹2,000 – ₹5,000**
+    - `BLR-HYD`: **₹1,500 – ₹4,000**
+    - `DEL-BLR`: **₹4,000 – ₹9,000**
+  - REST endpoint `/api/flights/price/` explicitly returns `min_price` and `max_price` alongside the current ticket price.
+- **Real-Time Dynamic Route Guidance in Alert Modal**:
+  - Modal cross-references the entered budget against the route's configured boundaries.
+  - Warns if threshold is below the route minimum (e.g. `< ₹3,000` for DEL-BOM) or above the route peak (`> ₹7,000`), while preserving user freedom to proceed.
+- **Global "Clear Data" Button in Header & Admin Hub**:
+  - Prominent "Clear Data" button in the Navbar header and Admin Hub.
+  - Opens a confirmation safety modal to wipe all alerts, notifications, and quota logs across all users (regular and admin), reset monthly quota, and flush Redis cache.
+- **Anti-Flicker Toast Deduplication & Stacking Cap**:
+  - Deduplicates identical alert messages and caps visible notifications to max 3, eliminating vertical jitter during rapid scans.
+- **React Portal Modal Stacking Fix**:
+  - Modals mounted via `createPortal(..., document.body)` so they render immune to sticky header `backdrop-filter` clipping contexts.
 
 ---
 
@@ -48,6 +124,8 @@ PulseNotify/
 ├── docker-compose.yml              # PostgreSQL 17 and Redis 7 services
 ├── manage.py
 ├── requirements.txt                # Pinned backend dependencies
+├── run_all.py                      # Unified All-in-One terminal manager (color-coded)
+├── start_pulsenotify.bat           # 1-Click Windows Batch launcher
 ├── .env.example                    # Template environment variables
 ├── .env                            # Local configuration (never committed)
 ├── .gitignore
@@ -75,7 +153,7 @@ PulseNotify/
 ├── pulse/
 │   ├── models.py                   # UserProfile, PriceAlert, NotificationLog, ApiQuota, QuotaAlertLog
 │   ├── serializers.py              # DRF ModelSerializers with validation
-│   ├── views.py                    # REST API endpoints & telemetry handlers
+│   ├── views.py                    # REST API endpoints, telemetry handlers & Clear Data view
 │   ├── urls.py                     # App routing
 │   ├── permissions.py              # Custom IsAdminUser permission
 │   ├── signals.py                  # Auto-creates UserProfile on User creation
@@ -91,8 +169,8 @@ PulseNotify/
     ├── vite.config.ts              # Vite dev server with /api reverse proxy
     ├── src/
     │   ├── api/                    # Typed API clients (alerts, auth, flights, quota, admin)
-    │   ├── components/             # Reusable UI widgets, layout (Navbar with Beat 30s badge), modal, banner
-    │   ├── context/                # AuthContext (JWT rehydration, RBAC) & ToastContext
+    │   ├── components/             # Reusable UI widgets, layout (Navbar with Clear Data & Beat badge), modal, banner
+    │   ├── context/                # AuthContext (JWT rehydration, RBAC), ToastContext (deduped), TelemetryContext
     │   ├── pages/                  # FlightRadarView, AlertsManagerView, NotificationsView, AdminAnalyticsView, SimulatorView, SystemGuideView
     │   ├── types/                  # TypeScript interfaces matching backend models
     │   └── utils/                  # Formatters, route helpers, and badge helpers
@@ -171,78 +249,86 @@ Suppose a user has two alerts on `DEL-BOM`:
 - Docker & Docker Compose
 - Git
 
-### 2. Backend Environment & Dependencies
+### 2. Environment Setup
 ```bash
+# Clone the repository
+git clone https://github.com/Gaurang-Agl/PulseNotify.git
+cd PulseNotify
+
 # Create and activate virtual environment
 python -m venv venv
+.\venv\Scripts\Activate.ps1   # On Windows
+source venv/bin/activate       # On Linux / macOS
 
-# Windows PowerShell:
-.\venv\Scripts\Activate.ps1
-# Linux / macOS:
-source venv/bin/activate
-
-# Install pinned dependencies
+# Install backend dependencies
 pip install -r requirements.txt
-```
 
-### 3. Frontend Dependencies
-```bash
-cd frontend
-npm install
-cd ..
-```
+# Install frontend dependencies
+cd frontend && npm install && cd ..
 
-### 4. Environment Variables
-Copy `.env.example` to `.env`:
-```bash
+# Setup environment variables
 cp .env.example .env
 ```
-Update values as needed (database credentials, secret key, provider API keys).
 
-### 5. Start Infrastructure (PostgreSQL 17 & Redis 7)
+### 3. Start Infrastructure & Migrate
 ```bash
+# Start PostgreSQL 17 & Redis 7
 docker compose up -d
-```
 
-### 6. Apply Database Migrations
-```bash
+# Apply database migrations
 python manage.py migrate
 ```
 
-### 7. Run Unit Tests, Typecheck & Integrity Manifest
+### 4. Run Automated Test Suites
 ```bash
-# Run backend Django test suites (14 tests)
+# Backend unit tests (14 tests)
 python manage.py test
 
-# Run frontend TypeScript typecheck & production build
+# Frontend TypeScript typecheck & production build
 cd frontend
 npm run typecheck
 npm run build
 cd ..
 
-# Verify file integrity manifest
+# Verify cryptographic MD5 integrity manifest
 python update_md5.py --check
 ```
 
 ---
 
-## Running PulseNotify (5 Simultaneous Terminals)
+## How to Run PulseNotify
 
-PulseNotify operates with 5 concurrent processes:
+### Option A: 1-Click All-in-One Console Launcher (Recommended)
+You can launch the entire ecosystem in **one single window** with zero manual terminal management:
 
-### Terminal 1: Infrastructure (Docker)
+```bash
+# From project root or double-clicking Desktop shortcut:
+start_pulsenotify.bat
+```
+- Automatically checks/boots Docker Desktop, PostgreSQL, and Redis.
+- Launches Django API, Celery Worker (`--pool=solo`), Celery Beat (30s schedule), and Vite frontend in a single color-coded stream.
+- Opens your browser to `http://localhost:5173` automatically.
+- Pressing `Ctrl + C` cleanly shuts down all processes.
+
+---
+
+### Option B: 5 Separate Terminals (Manual)
+
+If you prefer running each service in a separate terminal window:
+
+#### Terminal 1: Infrastructure (Docker)
 ```bash
 docker compose up -d
 ```
 Starts PostgreSQL 17 on port 5432 and Redis 7 on port 6379.
 
-### Terminal 2: Django API Server
+#### Terminal 2: Django API Server
 ```bash
 python manage.py runserver
 ```
 Runs at `http://localhost:8000`.
 
-### Terminal 3: Celery Worker
+#### Terminal 3: Celery Worker
 ```bash
 # On Windows (use --pool=solo to avoid Windows fork limitations):
 celery -A config worker --loglevel=info --pool=solo
@@ -252,13 +338,13 @@ celery -A config worker --loglevel=info
 ```
 Monitors Redis for background tasks like `send_notification`.
 
-### Terminal 4: Celery Beat Scheduler (30s Cycle)
+#### Terminal 4: Celery Beat Scheduler (30s Cycle)
 ```bash
 celery -A config beat --loglevel=info
 ```
-Automatically triggers `check_prices` every 30 seconds (supplementing the 0ms instant ingestion evaluator).
+Automatically triggers `check_prices` every 30 seconds.
 
-### Terminal 5: Frontend Development Server
+#### Terminal 5: Frontend Development Server
 ```bash
 cd frontend
 npm run dev
@@ -277,19 +363,20 @@ Runs at `http://localhost:5173` with reverse proxying of `/api` to `http://127.0
 | `GET` | `/api/alerts/` | JWT (User) | Lists user's alerts (supports optional `?status=active\|triggered\|inactive`) |
 | `GET` | `/api/alerts/<id>/` | JWT (User) | Retrieves details of user's alert (unauthorized ID returns 404) |
 | `DELETE` | `/api/alerts/<id>/` | JWT (User) | Soft-deactivates alert (`status='inactive'`), preserves audit trail |
-| `GET` | `/api/flights/price/?route=DEL-BOM` | Public | Fetches route price with 30s Redis cache snapshot & quota telemetry |
+| `GET` | `/api/flights/price/?route=DEL-BOM` | Public | Fetches route price with `min_price`, `max_price`, 30s Redis cache snapshot & quota telemetry |
 | `GET` | `/api/flights/price/?route=DEL-BOM&refresh=true` | Public | **On-demand force-refresh**: bypasses 30s Redis cache, calculates fresh fare |
 | `GET` | `/api/notifications/` | JWT (User) | Lists price drop notification history with savings calculations |
 | `GET` | `/api/admin/summary/` | Admin Only | Platform-wide metrics, active vs. triggered ratios & top routes |
 | `GET` | `/api/admin/quota/` | Public/Admin | Real-time monthly API quota telemetry and audit logs |
 | `POST` | `/api/admin/quota/` | Public/Admin | Resets monthly API quota consumption counter to 0 |
 | `POST` | `/api/admin/quota/simulate/` | Public/Admin | Deterministic milestone testing (25%, 50%, 60%, 70%, 80%, 90%) |
+| `POST` | `/api/admin/clear-data/` | Admin Only | **Global platform wipe**: deletes all alerts, notifications, quota logs across all users, resets quota, flushes Redis |
 
 ---
 
-## Decoupled Module Verification Manual (10 Pointwise Modules)
+## Decoupled Module Verification Manual (11 Pointwise Modules)
 
-1. **Module 1: Flight Pricing & 30s Redis Cache**: `GET /api/flights/price/?route=DEL-BOM` serves fares cached in Redis key `pulsenotify:flight_price:DEL-BOM` for 30s. Adding `&refresh=true` forces an immediate fresh fare.
+1. **Module 1: Flight Pricing & 30s Redis Cache**: `GET /api/flights/price/?route=DEL-BOM` serves fares cached in Redis key `pulsenotify:flight_price:DEL-BOM` for 30s, returning authentic `min_price` and `max_price`. Adding `&refresh=true` forces an immediate fresh fare.
 2. **Module 2: SimpleJWT Authentication & Auto-Profile Hook**: `POST /api/auth/register/` issues 7-day JWT tokens and auto-provisions a `UserProfile` (`role='user'`) via Django signals.
 3. **Module 3: Price Alert Lifecycle & Idempotency Engine**: `POST /api/alerts/` validates uppercase 3-letter IATA codes, positive thresholds, and sets `status='active'`.
 4. **Module 4: Instantaneous Ingestion & Cross-Checking Engine (0ms)**: Synchronous hook `evaluate_alerts_for_price()` executes on fare discovery; triggers matching alerts with 0ms delay.
@@ -299,6 +386,7 @@ Runs at `http://localhost:5173` with reverse proxying of `/api` to `http://127.0
 8. **Module 8: Soft Delete & State Machine Protection**: `DELETE /api/alerts/<id>/` sets `status='inactive'`, preserving foreign keys for notification audit logs.
 9. **Module 9: Multi-Tenant Isolation & 404 Cloaking**: Querysets scoped by `user=request.user`. Attempting to access another user's alert ID returns HTTP 404 (cloaking existence) instead of 403.
 10. **Module 10: Admin RBAC Telemetry & Quota Milestone Trapping**: Non-admin calling `/api/admin/summary/` returns 403. Quota milestones (25%, 50%, 60%, 70%, 80%, 90%) trigger warning banners and audit logs.
+11. **Module 11: Global Platform Data Wipe**: Admins can invoke `POST /api/admin/clear-data/` (or click "Clear Data" in the Header/Admin view) to safely wipe all platform records with a safety confirmation modal.
 
 ---
 
