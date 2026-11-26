@@ -122,7 +122,9 @@ export const AlertsManagerView: React.FC<AlertsManagerViewProps> = ({
 
       const routeKey = `${cleanOrigin}-${cleanDest}`;
       const routeMeta = ROUTE_AIRPORTS[routeKey];
-      if (routeMeta && numericPrice < routeMeta.min) {
+      if (created.status === 'triggered') {
+        success(`🎉 Price Alert Triggered Instantly! Current price for ${created.origin}-${created.destination} is already below your threshold of ${formatCurrencyINR(created.threshold_price)}!`);
+      } else if (routeMeta && numericPrice < routeMeta.min) {
         warning(`Alert saved @ ${formatCurrencyINR(numericPrice)} (Note: Below route minimum of ${formatCurrencyINR(routeMeta.min)}).`);
       } else if (routeMeta && numericPrice > routeMeta.max) {
         warning(`Alert saved @ ${formatCurrencyINR(numericPrice)} (Note: Above route maximum of ${formatCurrencyINR(routeMeta.max)}).`);

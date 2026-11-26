@@ -127,7 +127,23 @@ class PriceAlertListCreateView(ListCreateAPIView):
         return queryset.order_by("-created_at")
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        alert = serializer.save(user=self.request.user)
+        # Instant zero-latency evaluation on creation:
+        # If current route price is already below/equal to threshold, trigger immediately
+        try:
+            from .services.flight_provider import get_flight_provider
+            from .tasks import send_notification
+            provider = get_flight_provider()
+            route_price = provider.get_route_price(alert.origin, alert.destination)
+            if route_price and float(route_price.price) <= float(alert.threshold_price):
+                send_notification(alert.id, route_price.price)
+                try:
+                    send_notification.delay(alert.id, route_price.price)
+                except Exception:
+                    pass
+                alert.refresh_from_db()
+        except Exception as e:
+            logger.warning("Failed immediate alert evaluation on creation: %s", e)
 
 
 class PriceAlertDetailView(APIView):

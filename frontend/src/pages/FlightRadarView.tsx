@@ -116,8 +116,12 @@ export const FlightRadarView: React.FC<FlightRadarViewProps> = ({
           const routeAlerts = userAlerts.filter(
             (a) => a.origin === origin && a.destination === destination
           );
-          const routeActiveAlerts = routeAlerts.filter((a) => a.status === 'active');
-          const routeTriggeredAlerts = routeAlerts.filter((a) => a.status === 'triggered');
+          // If live price is already at or below alert's threshold, it is considered triggered
+          const isSatisfied = (a: (typeof routeAlerts)[0]) =>
+            a.status === 'triggered' || (a.status === 'active' && price <= Number(a.threshold_price));
+
+          const routeTriggeredAlerts = routeAlerts.filter(isSatisfied);
+          const routeActiveAlerts = routeAlerts.filter((a) => a.status === 'active' && !isSatisfied(a));
           const isActive = routeActiveAlerts.length > 0;
           const isTriggered = routeTriggeredAlerts.length > 0;
 

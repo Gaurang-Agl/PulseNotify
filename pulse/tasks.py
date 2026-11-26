@@ -10,7 +10,8 @@ logger = logging.getLogger(__name__)
 def evaluate_alerts_for_price(origin: str, destination: str, current_price: float):
     """
     Evaluates active alerts for a specific route against a given price.
-    Dispatches send_notification for all satisfied alerts immediately.
+    Immediately creates notification log and transitions status to TRIGGERED
+    synchronously so DB state matches the response, then dispatches to Celery.
     Returns a list of triggered alert IDs.
     """
     active_alerts = PriceAlert.objects.filter(
@@ -21,7 +22,12 @@ def evaluate_alerts_for_price(origin: str, destination: str, current_price: floa
     triggered_ids = []
     for alert in active_alerts:
         if current_price <= float(alert.threshold_price):
-            send_notification.delay(alert.id, current_price)
+            # Synchronously execute notification creation and state flip
+            send_notification(alert.id, current_price)
+            try:
+                send_notification.delay(alert.id, current_price)
+            except Exception:
+                pass
             triggered_ids.append(alert.id)
     return triggered_ids
 
@@ -60,8 +66,11 @@ def send_notification(alert_id, triggered_price):
         logger.warning("PriceAlert with id %s does not exist", alert_id)
         return
 
-    # Idempotency guard: only trigger if alert is still active
-    if alert.status != PriceAlert.Status.ACTIVE:
+    # Idempotency guard: only trigger if notification hasn't been logged yet
+    if NotificationLog.objects.filter(alert=alert).exists():
+        if alert.status != PriceAlert.Status.TRIGGERED:
+            alert.status = PriceAlert.Status.TRIGGERED
+            alert.save(update_fields=['status'])
         return
 
     message = (
@@ -76,4 +85,4 @@ def send_notification(alert_id, triggered_price):
     )
     # Mark alert as triggered so it doesn't fire again
     alert.status = PriceAlert.Status.TRIGGERED
-    alert.save()
+    alert.save(update_fields=['status'])
