@@ -190,6 +190,25 @@ def format_frontend_line(line: str) -> str:
         return f"{BOLD}{FG_TEAL}[FRONTEND:HMR]{RESET} {FG_TEAL}{line.strip()}{RESET}"
     return f"{BOLD}{FG_TEAL}[FRONTEND   ]{RESET} {line}"
 
+last_terminal_clear_time = 0
+
+def clear_terminal_console():
+    """Wipes the console screen and scrollback buffer when Admin clears data."""
+    global last_terminal_clear_time
+    now = time.time()
+    if now - last_terminal_clear_time < 2:
+        return
+    last_terminal_clear_time = now
+
+    # Clear terminal screen (works on Windows cmd, PowerShell, and Unix)
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+    print(f"\n{BOLD}{FG_RED}========================================================================{RESET}")
+    print(f"{BOLD}{FG_RED}       PulseNotify — Console Terminal Cleared & Logs Reset              {RESET}")
+    print(f"{BOLD}{FG_RED}========================================================================{RESET}")
+    print(f"{BOLD}{FG_RED}[API:CLEAR ]{RESET} {BOLD}{FG_LIME}✓ PLATFORM DATA PURGED & TERMINAL LOGS CLEARED BY ADMIN{RESET}")
+    print(f"{DIM}Monitoring active for Flight Radar, Celery Worker, and live API requests...{RESET}\n", flush=True)
+
 def stream_reader(tag: str, pipe):
     """Continuously read lines from a subprocess pipe and print with colored tag."""
     try:
@@ -199,6 +218,13 @@ def stream_reader(tag: str, pipe):
             clean_line = line.rstrip('\r\n')
             if not clean_line:
                 continue
+
+            if "[PULSENOTIFY:CLEAR_TERMINAL]" in clean_line:
+                clear_terminal_console()
+                continue
+
+            if tag == "BACKEND" and "/api/admin/clear-data" in clean_line:
+                clear_terminal_console()
 
             formatted = None
             if tag == "BACKEND":

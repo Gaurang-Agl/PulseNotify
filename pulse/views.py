@@ -409,6 +409,14 @@ class AdminClearDataView(APIView):
         except Exception:
             redis_ok = False
 
+        # Signal console runner / clear local terminal screen
+        import os
+        try:
+            os.system('cls' if os.name == 'nt' else 'clear')
+        except Exception:
+            pass
+        print("[PULSENOTIFY:CLEAR_TERMINAL]", flush=True)
+
         return Response(
             {
                 "message": "All platform data (alerts, notifications, quota logs) wiped successfully.",
