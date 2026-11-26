@@ -1,7 +1,9 @@
-﻿from django.urls import path
+from django.urls import path
 
 from .views import (
     AdminSummaryView,
+    ApiQuotaSimulateView,
+    ApiQuotaView,
     FlightPriceView,
     LoginView,
     PriceAlertDetailView,
@@ -19,12 +21,15 @@ urlpatterns = [
     path("alerts/", PriceAlertListCreateView.as_view(), name="alert-list-create"),
     path("alerts/<int:id>/", PriceAlertDetailView.as_view(), name="alert-detail"),
 
-    # Mock flight price feed
+    # Real-time / Mock flight price feed
     path("flights/price/", FlightPriceView.as_view(), name="flight-price"),
 
-    # Admin analytics
+    # Admin analytics & Quota telemetry
     path("admin/summary/", AdminSummaryView.as_view(), name="admin-summary"),
+    path("admin/quota/", ApiQuotaView.as_view(), name="admin-quota"),
+    path("admin/quota/simulate/", ApiQuotaSimulateView.as_view(), name="admin-quota-simulate"),
 
     # Notification endpoints
     path("notifications/", NotificationListView.as_view(), name="notification-list"),
 ]
+

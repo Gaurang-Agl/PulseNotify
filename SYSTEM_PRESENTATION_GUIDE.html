@@ -1,0 +1,1011 @@
+﻿<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PulseNotify — Full-Stack System Architecture & Technical Presentation Guide</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Mermaid.js for Vector Architecture Diagrams -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      themeVariables: {
+        darkMode: true,
+        background: '#0f172a',
+        primaryColor: '#0284c7',
+        primaryTextColor: '#f8fafc',
+        primaryBorderColor: '#38bdf8',
+        lineColor: '#64748b',
+        secondaryColor: '#334155',
+        tertiaryColor: '#1e293b'
+      }
+    });
+  </script>
+
+  <!-- PDF Print Optimization Styles -->
+  <style>
+    @media print {
+      body {
+        background-color: #ffffff !important;
+        color: #0f172a !important;
+        font-size: 11pt !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .print-page-break {
+        page-break-before: always !important;
+        break-before: page !important;
+      }
+      .print-card {
+        background: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        box-shadow: none !important;
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
+        color: #0f172a !important;
+      }
+      .print-text-dark {
+        color: #0f172a !important;
+      }
+      .print-text-muted {
+        color: #475569 !important;
+      }
+      pre, code {
+        background: #f1f5f9 !important;
+        color: #0f172a !important;
+        border: 1px solid #cbd5e1 !important;
+      }
+      a {
+        text-decoration: none !important;
+        color: #0284c7 !important;
+      }
+      .mermaid svg {
+        max-width: 100% !important;
+        height: auto !important;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-slate-950 text-slate-100 font-sans antialiased selection:bg-sky-500 selection:text-white min-h-screen">
+
+  <!-- Sticky Top Navigation & PDF Export Toolbar -->
+  <header class="no-print sticky top-0 z-50 backdrop-blur-xl bg-slate-950/85 border-b border-slate-800/80 px-6 py-3.5 transition-all">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-sky-500/20 text-white font-black text-xl">
+          ⚡
+        </div>
+        <div>
+          <h1 class="text-sm font-bold text-slate-100 tracking-tight flex items-center gap-2">
+            PulseNotify
+            <span class="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/30">
+              Master Architecture & Validation Guide
+            </span>
+          </h1>
+          <p class="text-xs text-slate-400">Flight Price Monitor & Alert System • Distributed Telemetry Engine</p>
+        </div>
+      </div>
+
+      <!-- Quick Nav Links & PDF Action -->
+      <div class="flex items-center gap-3">
+        <nav class="hidden md:flex items-center gap-1 text-xs font-medium text-slate-400">
+          <a href="#overview" class="px-2.5 py-1.5 rounded-lg hover:text-white hover:bg-slate-800 transition">Overview</a>
+          <a href="#architecture" class="px-2.5 py-1.5 rounded-lg hover:text-white hover:bg-slate-800 transition">Architecture</a>
+          <a href="#pillars" class="px-2.5 py-1.5 rounded-lg hover:text-white hover:bg-slate-800 transition">Design Pillars</a>
+          <a href="#setup" class="px-2.5 py-1.5 rounded-lg hover:text-white hover:bg-slate-800 transition">Local Setup</a>
+          <a href="#validation" class="px-2.5 py-1.5 rounded-lg hover:text-white hover:bg-slate-800 transition">Validation Steps</a>
+          <a href="#architecture-faq" class="px-2.5 py-1.5 rounded-lg hover:text-white hover:bg-slate-800 transition">Architecture Script</a>
+        </nav>
+
+        <button onclick="window.print()" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs tracking-wide shadow-lg shadow-emerald-500/25 transition active:scale-95 cursor-pointer">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+          </svg>
+          Save / Export as PDF
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Document Container -->
+  <main class="max-w-7xl mx-auto px-6 py-10 space-y-16">
+
+    <!-- HERO / TITLE BANNER -->
+    <section class="relative overflow-hidden rounded-3xl bg-gradient-to-b from-slate-900 via-slate-900/90 to-slate-950 border border-slate-800 p-8 md:p-12 shadow-2xl print-card">
+      <div class="absolute -top-24 -right-24 w-96 h-96 bg-sky-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-24 -left-24 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      
+      <div class="relative z-10 max-w-4xl space-y-4">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/30 text-sky-400 text-xs font-mono font-semibold">
+          🚀 Production-Grade Distributed System
+        </div>
+        <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight text-white print-text-dark">
+          PulseNotify System Architecture & Technical Deep-Dive Master Guide
+        </h1>
+        <p class="text-base md:text-lg text-slate-300 print-text-muted leading-relaxed">
+          Comprehensive operational manual, visual telemetry workflows, and step-by-step local testing procedure for demonstrating an asynchronous event-driven flight price monitoring system in technical architecture reviews.
+        </p>
+
+        <!-- Metadata Pills -->
+        <div class="pt-4 flex flex-wrap gap-3 text-xs font-mono text-slate-400 print-text-muted">
+          <span class="px-3 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700/80">Backend: Django 5.2 + DRF 3.18</span>
+          <span class="px-3 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700/80">Queue: Celery 5.6 + Redis 7</span>
+          <span class="px-3 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700/80">Database: PostgreSQL 17</span>
+          <span class="px-3 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700/80">Frontend: React 18 + Vite + Tailwind</span>
+          <span class="px-3 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">Dual-Trigger: 30s Beat + 0ms Instant Hook</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 0: PLAIN ENGLISH / LAYMAN & EXECUTIVE OVERVIEW -->
+    <section id="layman" class="space-y-6">
+      <div class="flex items-center gap-3 pb-3 border-b border-slate-800">
+        <div class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">0</div>
+        <h2 class="text-2xl font-bold tracking-tight text-white print-text-dark">PulseNotify in Plain English (Layman & Executive Perspective)</h2>
+      </div>
+
+      <!-- The 30-Second Metaphor Card -->
+      <div class="rounded-2xl bg-gradient-to-br from-slate-900 to-emerald-950/20 border border-emerald-500/30 p-6 space-y-4 print-card">
+        <div class="flex items-center gap-2 text-emerald-400 font-semibold text-sm uppercase tracking-wider font-mono">
+          ✨ The 30-Second Metaphor: "The Personal Flight Butler"
+        </div>
+        <p class="text-sm text-slate-300 print-text-dark leading-relaxed">
+          Imagine wanting to fly from Delhi to Mumbai, but you only want to pay ₹4,000. In real life, airline fares change constantly based on demand algorithms. You cannot sit at your computer refreshing Google Flights every 5 minutes. PulseNotify acts as your <strong>24/7 automated personal travel butler</strong>:
+        </p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
+          <div class="p-4 rounded-xl bg-slate-950/70 border border-slate-800 space-y-1">
+            <div class="font-bold text-sky-400 font-mono text-sm">1. You Set a Target</div>
+            <p class="text-xs text-slate-400 leading-relaxed">You tell PulseNotify: <em>"Ping me if DEL-BOM goes below ₹4,000."</em> Takes 5 seconds to configure.</p>
+          </div>
+          <div class="p-4 rounded-xl bg-slate-950/70 border border-slate-800 space-y-1">
+            <div class="font-bold text-amber-400 font-mono text-sm">2. Auto-Scan (30s)</div>
+            <p class="text-xs text-slate-400 leading-relaxed">PulseNotify watches fares every 30s automatically (or instantly when you tap 'Scan Now' to bypass cache).</p>
+          </div>
+          <div class="p-4 rounded-xl bg-slate-950/70 border border-slate-800 space-y-1">
+            <div class="font-bold text-emerald-400 font-mono text-sm">3. Instant Catch (0ms)</div>
+            <p class="text-xs text-slate-400 leading-relaxed">The instant an airline drops the price to ₹3,800, PulseNotify catches it with zero delay.</p>
+          </div>
+          <div class="p-4 rounded-xl bg-slate-950/70 border border-slate-800 space-y-1">
+            <div class="font-bold text-purple-400 font-mono text-sm">4. Zero Spam Guard</div>
+            <p class="text-xs text-slate-400 leading-relaxed">Notifies you once with savings (₹200). Won't spam you every 30s while the fare stays low.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Plain English to Technology Translation Matrix -->
+      <div class="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900/60 print-card">
+        <table class="w-full text-left text-xs font-mono">
+          <thead>
+            <tr class="border-b border-slate-800 bg-slate-900/90 text-slate-400">
+              <th class="p-3 w-56">Plain English Concept</th>
+              <th class="p-3 w-64 text-sky-400">Engineering Implementation</th>
+              <th class="p-3">How It Works in Layman Terms</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800/60 text-slate-300">
+            <tr>
+              <td class="p-3 font-bold text-slate-200">The Autonomous Alarm Clock</td>
+              <td class="p-3 text-amber-400 font-semibold">Celery Beat (30s Cycle)</td>
+              <td class="p-3 text-slate-400">Wakes up quietly every 30 seconds to initiate flight price checks in the background even if your laptop is closed.</td>
+            </tr>
+            <tr>
+              <td class="p-3 font-bold text-slate-200">The Lightning Messenger</td>
+              <td class="p-3 text-rose-400 font-semibold">Redis 7 Broker & Cache</td>
+              <td class="p-3 text-slate-400">Holds tasks and saves price snapshots for 30s so the web app and background workers always agree on the exact same fare.</td>
+            </tr>
+            <tr>
+              <td class="p-3 font-bold text-slate-200">The Dedicated Worker</td>
+              <td class="p-3 text-emerald-400 font-semibold">Celery Worker Pool</td>
+              <td class="p-3 text-slate-400">Handles database writes and notification emails behind the scenes so the web page never freezes or lags.</td>
+            </tr>
+            <tr>
+              <td class="p-3 font-bold text-slate-200">The Unbreakable Safe</td>
+              <td class="p-3 text-purple-400 font-semibold">PostgreSQL 17 Database</td>
+              <td class="p-3 text-slate-400">Stores users, alerts, and historical logs safely. If an alert is turned off, the history is kept forever for savings calculations.</td>
+            </tr>
+            <tr>
+              <td class="p-3 font-bold text-slate-200">The Fuel Gauge</td>
+              <td class="p-3 text-amber-300 font-semibold">Quota Milestone Trapping</td>
+              <td class="p-3 text-slate-400">Warns administrators at 25%, 50%, 60%, 70%, 80%, and 90% usage so API credits never run out unexpectedly.</td>
+            </tr>
+            <tr>
+              <td class="p-3 font-bold text-slate-200">The Private Compartment</td>
+              <td class="p-3 text-sky-300 font-semibold">Row-Level JWT Isolation</td>
+              <td class="p-3 text-slate-400">Guarantees that User A can never peek at or tamper with User B's flight monitors. Guessing IDs returns a blank 404.</td>
+            </tr>
+            <tr>
+              <td class="p-3 font-bold text-slate-200">The Smart Bundler</td>
+              <td class="p-3 text-indigo-300 font-semibold">O(N) &rarr; O(1) Route Batching</td>
+              <td class="p-3 text-slate-400">If 1,000 travelers monitor DEL-BOM, PulseNotify calls the airline once, not 1,000 times, saving 99% of costs.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SECTION 1: EXECUTIVE TECHNICAL OVERVIEW -->
+    <section id="overview" class="space-y-6">
+      <div class="flex items-center gap-3 pb-3 border-b border-slate-800">
+        <div class="w-8 h-8 rounded-lg bg-sky-500/20 text-sky-400 flex items-center justify-center font-bold">1</div>
+        <h2 class="text-2xl font-bold tracking-tight text-white print-text-dark">Executive Technical Overview & Domain Problem</h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="rounded-2xl bg-slate-900/60 border border-slate-800 p-6 space-y-4 print-card">
+          <div class="flex items-center gap-2 text-rose-400 font-semibold text-sm uppercase tracking-wider font-mono">
+            ⚠️ The Real-World Volatility Problem
+          </div>
+          <p class="text-sm text-slate-300 print-text-dark leading-relaxed">
+            Airlines employ aggressive dynamic revenue management algorithms that recalculate seat fares dozens of times daily. Fares between high-density corridors (such as <code class="text-rose-300 bg-slate-800 px-1 py-0.5 rounded font-mono">DEL-BOM</code>) fluctuate rapidly from ₹6,200 to ₹4,100 during low site traffic and surge back to ₹9,800 within hours.
+          </p>
+          <ul class="text-xs text-slate-400 print-text-muted space-y-2 list-disc list-inside">
+            <li>Human travelers cannot refresh search pages 24 hours a day.</li>
+            <li>Discount windows close before manual discovery occurs.</li>
+            <li>Naive monitoring systems crash external APIs with duplicate queries.</li>
+          </ul>
+        </div>
+
+        <div class="rounded-2xl bg-slate-900/60 border border-slate-800 p-6 space-y-4 print-card">
+          <div class="flex items-center gap-2 text-emerald-400 font-semibold text-sm uppercase tracking-wider font-mono">
+            ✨ The PulseNotify Engineering Solution
+          </div>
+          <p class="text-sm text-slate-300 print-text-dark leading-relaxed">
+            PulseNotify mirrors the core monitoring engines behind <strong>Google Flights</strong> and <strong>Skyscanner</strong> by providing an automated, decoupled, event-driven flight intelligence system.
+          </p>
+          <ul class="text-xs text-slate-400 print-text-muted space-y-2 list-disc list-inside">
+            <li><strong>Sub-second REST Gateway</strong>: Users register threshold alerts without blocking on third-party airline calls.</li>
+            <li><strong>Instant Ingestion & 30s Clock</strong>: Event-driven instant alert evaluation upon price drop, plus synchronized 30s Celery Beat background polling.</li>
+            <li><strong>Shared Redis Price Cache</strong>: 30-second snapshot TTL ensures the frontend Flight Radar and background worker evaluate the exact same ticket price.</li>
+            <li><strong>On-Demand Force-Refresh</strong>: Travelers can tap 'Scan Now' to bypass the 30s Redis cache via <code class="text-sky-300 font-mono">?refresh=true</code>, fetching fresh fluctuating fares immediately.</li>
+            <li><strong>Multi-Alert Route Tagging & Tiered Triggering</strong>: Multiple alerts on the same route display aggregated count badges; when prices plunge, each alert triggers independently with separate savings calculations.</li>
+            <li><strong>Route Deduplication</strong>: Aggregates distinct routes so 1,000 users watching DEL-BOM trigger only 1 external query.</li>
+            <li><strong>Spam Prevention</strong>: State-machine automatically transitions triggered alerts from Active to Triggered.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: FULL-STACK ARCHITECTURE BLUEPRINT -->
+    <section id="architecture" class="space-y-6 print-page-break">
+      <div class="flex items-center gap-3 pb-3 border-b border-slate-800">
+        <div class="w-8 h-8 rounded-lg bg-sky-500/20 text-sky-400 flex items-center justify-center font-bold">2</div>
+        <h2 class="text-2xl font-bold tracking-tight text-white print-text-dark">Full-Stack System Architecture Blueprint</h2>
+      </div>
+
+      <!-- Mermaid Diagram Card -->
+      <div class="rounded-2xl bg-slate-900/80 border border-slate-800 p-6 print-card overflow-x-auto">
+        <div class="mermaid">
+flowchart TD
+    subgraph Client ["Client Presentation Tier (React 18 + Vite SPA)"]
+        UI_Radar["Flight Radar View\n(Live 30s Polling & Route Tags)"]
+        UI_Alerts["Price Alerts Manager\n(Active / Triggered / Inactive)"]
+        UI_Notifs["Notification Stream\n(Savings Audit Log)"]
+        UI_Admin["Admin Analytics & Quota\n(RBAC Telemetry)"]
+        UI_Sim["Simulator View\n(Deterministic Testing)"]
+    end
+
+    subgraph Proxy ["Vite Reverse Proxy (:5173)"]
+        ViteDev["/api/* -> http://127.0.0.1:8000\n(Eliminates CORS)"]
+    end
+
+    subgraph BackendGateway ["Application Gateway (Django REST Framework)"]
+        AuthAPI["/api/auth/*\n(SimpleJWT & Signal Hook)"]
+        AlertsAPI["/api/alerts/*\n(User Scoped QuerySets)"]
+        PriceAPI["/api/flights/price/\n(Instant Evaluator & Redis Cache)"]
+        AdminAPI["/api/admin/*\n(IsAdminUser Guard)"]
+    end
+
+    subgraph AsyncTier ["Async Queue & Worker Tier (Redis 7 + Celery)"]
+        BeatClock["Celery Beat Scheduler\n(Periodic Fallback: 30s)"]
+        RedisBroker["Redis 7 Broker & Cache\n(Port 6379: Tasks + 30s Price Snapshot TTL)"]
+        WorkerPool["Celery Worker\n(--pool=solo on Windows)"]
+        InstantCheck["Instant Evaluator Hook\n(evaluate_alerts_for_price: 0ms)"]
+        CheckTask["pulse.tasks.check_prices\n(Periodic Route Aggregator)"]
+        NotifyTask["pulse.tasks.send_notification\n(Audit Logger & State Flip)"]
+    end
+
+    subgraph DatabaseVault ["Relational Store (PostgreSQL 17)"]
+        DB_User["auth_user & pulse_userprofile"]
+        DB_Alert["pulse_pricealert\n(Status: active, triggered, inactive)"]
+        DB_Notif["pulse_notificationlog\n(Audit Trail)"]
+        DB_Quota["pulse_apiquota & pulse_quotaalertlog\n(Milestones: 25%, 50%, 80%)"]
+    end
+
+    Client --> Proxy
+    Proxy --> BackendGateway
+    BackendGateway --> DatabaseVault
+    PriceAPI -->|1. Reads/Sets 30s Cached Price| RedisBroker
+    PriceAPI -->|2. Instant Cross-Check: 0ms| InstantCheck
+    InstantCheck -->|Threshold Met| NotifyTask
+    BeatClock -->|Enqueues Task (every 30s)| RedisBroker
+    RedisBroker -->|Pulls Task| WorkerPool
+    WorkerPool --> CheckTask
+    CheckTask -->|Queries Price Snapshot| RedisBroker
+    CheckTask -->|Threshold Met| NotifyTask
+    NotifyTask -->|Marks Triggered & Creates Log| DatabaseVault
+        </div>
+      </div>
+
+      <!-- 6 Core Building Blocks Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+        <div class="p-4 rounded-xl bg-slate-900/40 border border-slate-800 print-card space-y-1.5">
+          <div class="text-sky-400 font-bold font-mono">1. REST API Gateway</div>
+          <p class="text-slate-400 print-text-muted">Django REST Framework + SimpleJWT. Sub-second response times for auth, CRUD, and telemetry.</p>
+        </div>
+        <div class="p-4 rounded-xl bg-slate-900/40 border border-slate-800 print-card space-y-1.5">
+          <div class="text-amber-400 font-bold font-mono">2. Celery Beat Scheduler (30s)</div>
+          <p class="text-slate-400 print-text-muted">Synchronized autonomous clock running every 30.0s as a background fallback to evaluate routes even without active user traffic.</p>
+        </div>
+        <div class="p-4 rounded-xl bg-slate-900/40 border border-slate-800 print-card space-y-1.5">
+          <div class="text-rose-400 font-bold font-mono">3. Redis 7 Broker & Price Cache</div>
+          <p class="text-slate-400 print-text-muted">Task broker and shared 30s route-price snapshot cache (<code class="text-rose-300">TTL=30s</code>) guaranteeing identical fares across UI and background workers.</p>
+        </div>
+        <div class="p-4 rounded-xl bg-slate-900/40 border border-slate-800 print-card space-y-1.5">
+          <div class="text-emerald-400 font-bold font-mono">4. Instant Evaluator Hook (0ms)</div>
+          <p class="text-slate-400 print-text-muted">Triggers alert evaluation immediately inside <code class="text-emerald-300">FlightPriceView</code> upon fare ingestion, achieving instantaneous notification dispatch.</p>
+        </div>
+        <div class="p-4 rounded-xl bg-slate-900/40 border border-slate-800 print-card space-y-1.5">
+          <div class="text-purple-400 font-bold font-mono">5. PostgreSQL 17 Vault</div>
+          <p class="text-slate-400 print-text-muted">ACID-compliant relational store with soft-delete patterns, foreign keys, and complete audit trail preservation.</p>
+        </div>
+        <div class="p-4 rounded-xl bg-slate-900/40 border border-slate-800 print-card space-y-1.5">
+          <div class="text-indigo-400 font-bold font-mono">6. React 18 + Vite SPA</div>
+          <p class="text-slate-400 print-text-muted">Modern frontend featuring live countdown radar, multi-status alert filtering, simulator, and dark/light UI.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: DOMAIN MODELS, INSTANT EVALUATION & MODULE CROSS-CHECKING -->
+    <section class="space-y-6 print-page-break">
+      <div class="flex items-center gap-3 pb-3 border-b border-slate-800">
+        <div class="w-8 h-8 rounded-lg bg-sky-500/20 text-sky-400 flex items-center justify-center font-bold">3</div>
+        <h2 class="text-2xl font-bold tracking-tight text-white print-text-dark">Domain Models, Instant Evaluation & Step-by-Step Module Cross-Checking</h2>
+      </div>
+
+      <!-- 3.1 Domain Entity Relationships (ERD) & Alert State Machine -->
+      <div class="space-y-4">
+        <h3 class="text-lg font-bold text-sky-400 font-mono">3.1 Domain Entity Relationships (ERD) & Alert State Machine</h3>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- ERD Card -->
+          <div class="rounded-2xl bg-slate-900/80 border border-slate-800 p-6 print-card overflow-x-auto">
+            <h4 class="text-xs font-bold text-sky-400 font-mono mb-4 uppercase tracking-wider">Relational Database Schema (ERD)</h4>
+            <div class="mermaid">
+erDiagram
+    User ||--o| UserProfile : "has"
+    User ||--o{ PriceAlert : "owns"
+    PriceAlert ||--o{ NotificationLog : "generates"
+    ApiQuota ||--o{ QuotaAlertLog : "triggers"
+
+    User {
+        int id PK
+        string username
+        string password
+    }
+    UserProfile {
+        int id PK
+        int user_id FK
+        string role "user | admin"
+    }
+    PriceAlert {
+        int id PK
+        int user_id FK
+        string origin "DEL"
+        string destination "BOM"
+        decimal threshold_price
+        string status "active | triggered | inactive"
+    }
+    NotificationLog {
+        int id PK
+        int alert_id FK
+        decimal triggered_price
+        string message
+        datetime notified_at
+    }
+    ApiQuota {
+        int id PK
+        string month_key "2026-11"
+        int monthly_limit "2000"
+        int used_calls
+        json alerted_milestones
+    }
+            </div>
+          </div>
+
+          <!-- State Machine Card -->
+          <div class="rounded-2xl bg-slate-900/80 border border-slate-800 p-6 print-card overflow-x-auto">
+            <h4 class="text-xs font-bold text-emerald-400 font-mono mb-4 uppercase tracking-wider">Alert Lifecycle State Machine</h4>
+            <div class="mermaid">
+stateDiagram-v2
+    [*] --> ACTIVE : User creates alert (POST /api/alerts/)
+    ACTIVE --> TRIGGERED : Price <= threshold (Instant Hook / Beat)
+    ACTIVE --> INACTIVE : User deactivates (DELETE /api/alerts/id/)
+    TRIGGERED --> INACTIVE : User deactivates (DELETE /api/alerts/id/)
+    TRIGGERED --> [*] : Complete (No duplicate spam)
+    INACTIVE --> [*] : Soft deleted
+            </div>
+            <div class="mt-4 p-3 rounded-xl bg-slate-950/60 border border-slate-800 text-xs text-slate-400 space-y-1">
+              <div class="text-slate-200 font-semibold font-mono">Why this state machine matters:</div>
+              <p>1. <strong>Zero Spam</strong>: Moving from <span class="text-emerald-400 font-mono">ACTIVE</span> to <span class="text-purple-400 font-mono">TRIGGERED</span> ensures the user receives exactly 1 notification even if the fare stays below the threshold for hours.</p>
+              <p>2. <strong>Soft Delete</strong>: Setting <span class="text-slate-400 font-mono">INACTIVE</span> preserves foreign key references in historical notification logs.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3.2 Dual-Trigger Evaluation Architecture -->
+      <div class="space-y-4 pt-2">
+        <h3 class="text-lg font-bold text-amber-400 font-mono">3.2 Dual-Trigger Evaluation Architecture (Instant Hook + 30s Celery Beat)</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+          <div class="p-4 rounded-xl bg-slate-900/60 border border-amber-500/30 print-card space-y-2">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span class="text-emerald-400 font-bold font-mono uppercase">Path A: Instant Ingestion Hook</span>
+            </div>
+            <p class="text-slate-300 leading-relaxed">
+              When any client or radar query hits <code class="text-sky-300">GET /api/flights/price/</code>, <code class="text-amber-300">evaluate_alerts_for_price()</code> runs <strong>synchronously on fare arrival</strong>. Matching alerts trigger within <strong>0 milliseconds</strong>.
+            </p>
+          </div>
+          <div class="p-4 rounded-xl bg-slate-900/60 border border-sky-500/30 print-card space-y-2">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-sky-400"></span>
+              <span class="text-sky-400 font-bold font-mono uppercase">Path B: Celery Beat 30s Fallback</span>
+            </div>
+            <p class="text-slate-300 leading-relaxed">
+              Celery Beat acts as an autonomous clock, firing <code class="text-sky-300">check_prices</code> every <strong>30.0 seconds</strong>. It aggregates all active routes and guarantees background evaluation even when no users are active.
+            </p>
+          </div>
+          <div class="p-4 rounded-xl bg-slate-900/60 border border-rose-500/30 print-card space-y-2">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-rose-400"></span>
+              <span class="text-rose-400 font-bold font-mono uppercase">Redis 7: Single Source of Truth</span>
+            </div>
+            <p class="text-slate-300 leading-relaxed">
+              Prices are cached under <code class="text-rose-300">pulsenotify:flight_price:{ROUTE}</code> with <code class="text-slate-200 font-mono">TTL=30s</code>. Both instant searches and Celery workers query the identical fare snapshot.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3.3 Step-by-Step Module Cross-Checking Guide -->
+      <div class="space-y-4 pt-2">
+        <h3 class="text-lg font-bold text-sky-400 font-mono">3.3 Step-by-Step Module Cross-Checking Guide (Pointwise & Concise)</h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          <!-- 3.3.1 -->
+          <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800 print-card space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-sky-400 font-bold font-mono">3.3.1 Flight Radar & 30s Price Cache</span>
+              <span class="px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 text-[10px] font-mono">pulse.views.FlightPriceView</span>
+            </div>
+            <ul class="list-disc pl-4 space-y-1 text-slate-300">
+              <li><strong>Step 1:</strong> Call <code class="text-sky-300">GET /api/flights/price/?route=DEL-BOM</code>. Verify status 200 OK with <code class="text-slate-200">price</code>, <code class="text-slate-200">airline</code>, and <code class="text-slate-200">quota</code>.</li>
+              <li><strong>Step 2:</strong> Re-query within 30s. Confirm identical fare is returned directly from Redis cache snapshot.</li>
+              <li><strong>Step 3:</strong> Observe frontend Flight Radar card update with live fare, route tag, and 30s countdown.</li>
+            </ul>
+          </div>
+
+          <!-- 3.3.2 -->
+          <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800 print-card space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-emerald-400 font-bold font-mono">3.3.2 JWT Auth & Auto-Profile Hook</span>
+              <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-mono">RegisterView / LoginView</span>
+            </div>
+            <ul class="list-disc pl-4 space-y-1 text-slate-300">
+              <li><strong>Step 1:</strong> Call <code class="text-emerald-300">POST /api/auth/register/</code> with username & password. Verify 201 Created.</li>
+              <li><strong>Step 2:</strong> Verify response returns 7-day JWT <code class="text-slate-200">access</code> token and automatic <code class="text-slate-200">UserProfile</code> with role <code class="text-sky-300">user</code>.</li>
+              <li><strong>Step 3:</strong> Call <code class="text-emerald-300">POST /api/auth/login/</code> with credentials -> Verify 200 OK; invalid credentials return 401 Unauthorized.</li>
+            </ul>
+          </div>
+
+          <!-- 3.3.3 -->
+          <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800 print-card space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-purple-400 font-bold font-mono">3.3.3 Alert Lifecycle & Ownership</span>
+              <span class="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 text-[10px] font-mono">PriceAlertListCreateView</span>
+            </div>
+            <ul class="list-disc pl-4 space-y-1 text-slate-300">
+              <li><strong>Step 1:</strong> Call <code class="text-purple-300">POST /api/alerts/</code> with <code class="text-slate-200">origin="DEL"</code>, <code class="text-slate-200">destination="BOM"</code>, <code class="text-slate-200">threshold_price=4500</code>.</li>
+              <li><strong>Step 2:</strong> Verify 201 Created. Confirm row saved in PostgreSQL with <code class="text-emerald-400">status="active"</code> and user ID foreign key.</li>
+              <li><strong>Step 3:</strong> Verify sidebar alert counter increments by 1; Flight Radar displays green <code class="text-emerald-400">Alert Active: ≤₹4,500</code> badge.</li>
+            </ul>
+          </div>
+
+          <!-- 3.3.4 -->
+          <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800 print-card space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-amber-400 font-bold font-mono">3.3.4 Instantaneous Ingestion Hook</span>
+              <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[10px] font-mono">evaluate_alerts_for_price</span>
+            </div>
+            <ul class="list-disc pl-4 space-y-1 text-slate-300">
+              <li><strong>Step 1:</strong> Trigger price query where fare <= threshold (e.g. fare 4150 <= threshold 4500).</li>
+              <li><strong>Step 2:</strong> Ingestion hook detects match immediately (0ms latency), returns alert ID in <code class="text-amber-300">triggered_alerts</code> payload.</li>
+              <li><strong>Step 3:</strong> Alert status flips atomically to <code class="text-purple-400">triggered</code>; Radar card highlights with violet glow.</li>
+            </ul>
+          </div>
+
+          <!-- 3.3.5 -->
+          <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800 print-card space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-sky-400 font-bold font-mono">3.3.5 Celery Beat 30s Scheduler</span>
+              <span class="px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 text-[10px] font-mono">CELERY_BEAT_SCHEDULE</span>
+            </div>
+            <ul class="list-disc pl-4 space-y-1 text-slate-300">
+              <li><strong>Step 1:</strong> Observe Terminal 4 (<code class="text-sky-300">celery beat</code>). Confirm task dispatched every 30.0s.</li>
+              <li><strong>Step 2:</strong> Verify task <code class="text-slate-200">pulse.tasks.check_prices</code> enqueued to Redis broker on port 6379.</li>
+              <li><strong>Step 3:</strong> Acts as autonomous backup evaluating all unique routes even when zero users are browsing.</li>
+            </ul>
+          </div>
+
+          <!-- 3.3.6 -->
+          <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800 print-card space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-indigo-400 font-bold font-mono">3.3.6 Celery Worker Solo Pool</span>
+              <span class="px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 text-[10px] font-mono">celery --pool=solo</span>
+            </div>
+            <ul class="list-disc pl-4 space-y-1 text-slate-300">
+              <li><strong>Step 1:</strong> Observe Terminal 3 (<code class="text-indigo-300">celery worker</code>). Verifies solo execution pool on Windows OS.</li>
+              <li><strong>Step 2:</strong> Dequeues <code class="text-slate-200">send_notification</code> task asynchronously from Redis queue.</li>
+              <li><strong>Step 3:</strong> Logs task completion: <code class="text-emerald-400 font-mono">[Task send_notification succeeded in 0.03s]</code>.</li>
+            </ul>
+          </div>
+
+          <!-- 3.3.7 -->
+          <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800 print-card space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-rose-400 font-bold font-mono">3.3.7 Notification Audit Trail</span>
+              <span class="px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 text-[10px] font-mono">NotificationListView</span>
+            </div>
+            <ul class="list-disc pl-4 space-y-1 text-slate-300">
+              <li><strong>Step 1:</strong> Call <code class="text-rose-300">GET /api/notifications/</code> with Bearer JWT. Verify status 200 OK.</li>
+              <li><strong>Step 2:</strong> Check notification record: origin, destination, triggered price, savings, and exact timestamp.</li>
+              <li><strong>Step 3:</strong> Confirm sidebar notification badge count increments; real-time toast alert displays in UI.</li>
+            </ul>
+          </div>
+
+          <!-- 3.3.8 -->
+          <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800 print-card space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-slate-300 font-bold font-mono">3.3.8 Soft Delete & Idempotency</span>
+              <span class="px-2 py-0.5 rounded bg-slate-700 text-slate-300 text-[10px] font-mono">PriceAlertDetailView</span>
+            </div>
+            <ul class="list-disc pl-4 space-y-1 text-slate-300">
+              <li><strong>Step 1:</strong> Call <code class="text-slate-200">DELETE /api/alerts/&lt;id&gt;/</code>. Verify status 200 OK.</li>
+              <li><strong>Step 2:</strong> Verify alert row is preserved in PostgreSQL with status flipped to <code class="text-slate-400">inactive</code>.</li>
+              <li><strong>Step 3:</strong> Triggered alerts are excluded from future scans, preventing duplicate spam while preserving logs.</li>
+            </ul>
+          </div>
+
+          <!-- 3.3.9 -->
+          <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800 print-card space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-yellow-400 font-bold font-mono">3.3.9 Multi-Tenant Isolation & 404 Cloaking</span>
+              <span class="px-2 py-0.5 rounded bg-yellow-500/20 text-yellow-300 text-[10px] font-mono">Row-Level Security</span>
+            </div>
+            <ul class="list-disc pl-4 space-y-1 text-slate-300">
+              <li><strong>Step 1:</strong> Register User A and create Alert #1. Register User B with a separate session.</li>
+              <li><strong>Step 2:</strong> User B requests User A's alert: <code class="text-yellow-300">GET /api/alerts/1/</code>.</li>
+              <li><strong>Step 3:</strong> API returns <code class="text-rose-400 font-mono">404 Not Found</code> rather than 403, preventing ID enumeration.</li>
+            </ul>
+          </div>
+
+          <!-- 3.3.10 -->
+          <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800 print-card space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-cyan-400 font-bold font-mono">3.3.10 Admin RBAC & Quota Milestone Trapping</span>
+              <span class="px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 text-[10px] font-mono">AdminSummaryView / ApiQuotaView</span>
+            </div>
+            <ul class="list-disc pl-4 space-y-1 text-slate-300">
+              <li><strong>Step 1:</strong> Non-admin call to <code class="text-cyan-300">GET /api/admin/summary/</code> returns 403 Forbidden. Admin returns 200 OK with analytics.</li>
+              <li><strong>Step 2:</strong> Call <code class="text-cyan-300">POST /api/admin/quota/simulate/</code> with target 50% -> triggers milestone audit log & yellow warning banner.</li>
+              <li><strong>Step 3:</strong> Call <code class="text-cyan-300">POST /api/admin/quota/</code> (reset) -> clears counter back to 0 calls and resets active warning banner.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4: THE 4 CORE ENGINEERING PILLARS -->
+    <section id="pillars" class="space-y-6 print-page-break">
+      <div class="flex items-center gap-3 pb-3 border-b border-slate-800">
+        <div class="w-8 h-8 rounded-lg bg-sky-500/20 text-sky-400 flex items-center justify-center font-bold">4</div>
+        <h2 class="text-2xl font-bold tracking-tight text-white print-text-dark">The 4 Critical Engineering Pillars for Resilient Distributed Systems</h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Pillar 1 -->
+        <div class="rounded-2xl bg-slate-900/60 border border-slate-800 p-6 print-card space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono font-bold text-sky-400 uppercase tracking-wider">Pillar 1</span>
+            <span class="text-xs font-mono px-2 py-0.5 rounded bg-sky-500/10 text-sky-300 border border-sky-500/30">O(N) -> O(1) Optimization</span>
+          </div>
+          <h3 class="text-lg font-bold text-white print-text-dark">High-Efficiency Route Aggregation</h3>
+          <p class="text-xs text-slate-300 print-text-muted leading-relaxed">
+            If 1,000 travelers set alerts for <code class="text-sky-300">DEL-BOM</code>, querying airline APIs 1,000 times per minute would breach rate limits within minutes. PulseNotify optimizes this with database route deduplication:
+          </p>
+          <pre class="p-3 rounded-xl bg-slate-950 font-mono text-xs text-slate-300 overflow-x-auto border border-slate-800"><code>active_alerts = PriceAlert.objects.filter(status=PriceAlert.Status.ACTIVE)
+routes = active_alerts.values_list('origin', 'destination').distinct()</code></pre>
+          <p class="text-xs text-slate-400 print-text-muted">Queries the external feed <strong>once per unique route</strong>, then evaluates all 1,000 user thresholds in-memory. Zero wasted API credits.</p>
+        </div>
+
+        <!-- Pillar 2 -->
+        <div class="rounded-2xl bg-slate-900/60 border border-slate-800 p-6 print-card space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono font-bold text-purple-400 uppercase tracking-wider">Pillar 2</span>
+            <span class="text-xs font-mono px-2 py-0.5 rounded bg-purple-500/10 text-purple-300 border border-purple-500/30">Idempotency & Anti-Spam</span>
+          </div>
+          <h3 class="text-lg font-bold text-white print-text-dark">Atomic State Transitions</h3>
+          <p class="text-xs text-slate-300 print-text-muted leading-relaxed">
+            When a price drops below a threshold, the Celery worker dispatches <code class="text-purple-300">send_notification</code> and atomically transitions the alert status from <code class="text-emerald-400">ACTIVE</code> to <code class="text-purple-400">TRIGGERED</code>:
+          </p>
+          <pre class="p-3 rounded-xl bg-slate-950 font-mono text-xs text-slate-300 overflow-x-auto border border-slate-800"><code>NotificationLog.objects.create(alert=alert, triggered_price=price, ...)
+alert.status = PriceAlert.Status.TRIGGERED
+alert.save()</code></pre>
+          <p class="text-xs text-slate-400 print-text-muted">Subsequent 30-second polling loops only evaluate <code class="text-emerald-400">ACTIVE</code> alerts. Travelers never receive repetitive notification floods.</p>
+        </div>
+
+        <!-- Pillar 3 -->
+        <div class="rounded-2xl bg-slate-900/60 border border-slate-800 p-6 print-card space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono font-bold text-amber-400 uppercase tracking-wider">Pillar 3</span>
+            <span class="text-xs font-mono px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/30">Rate-Limit Telemetry</span>
+          </div>
+          <h3 class="text-lg font-bold text-white print-text-dark">API Quota Milestone Trapping</h3>
+          <p class="text-xs text-slate-300 print-text-muted leading-relaxed">
+            Third-party airline APIs enforce strict monthly call limits. PulseNotify records external consumption in PostgreSQL and evaluates milestone traps at:
+          </p>
+          <div class="flex flex-wrap gap-2 text-xs font-mono">
+            <span class="px-2 py-1 rounded bg-amber-500/10 text-amber-300 border border-amber-500/30">25%</span>
+            <span class="px-2 py-1 rounded bg-amber-500/10 text-amber-300 border border-amber-500/30">50%</span>
+            <span class="px-2 py-1 rounded bg-amber-500/10 text-amber-300 border border-amber-500/30">60%</span>
+            <span class="px-2 py-1 rounded bg-amber-500/10 text-amber-300 border border-amber-500/30">70%</span>
+            <span class="px-2 py-1 rounded bg-amber-500/10 text-amber-300 border border-amber-500/30">80%</span>
+            <span class="px-2 py-1 rounded bg-rose-500/10 text-rose-300 border border-rose-500/30">90% (Critical)</span>
+          </div>
+          <p class="text-xs text-slate-400 print-text-muted">Triggers real-time banners on the frontend, giving operators early runway to upgrade quotas before system outages occur.</p>
+        </div>
+
+        <!-- Pillar 4 -->
+        <div class="rounded-2xl bg-slate-900/60 border border-slate-800 p-6 print-card space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono font-bold text-emerald-400 uppercase tracking-wider">Pillar 4</span>
+            <span class="text-xs font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">Tenant Security</span>
+          </div>
+          <h3 class="text-lg font-bold text-white print-text-dark">Multi-Tenant Scoping & RBAC</h3>
+          <p class="text-xs text-slate-300 print-text-muted leading-relaxed">
+            Every user action is authenticated via JWT tokens. QuerySets are strictly scoped at the ORM layer:
+          </p>
+          <pre class="p-3 rounded-xl bg-slate-950 font-mono text-xs text-slate-300 overflow-x-auto border border-slate-800"><code>def get_queryset(self):
+    return PriceAlert.objects.filter(user=self.request.user)</code></pre>
+          <p class="text-xs text-slate-400 print-text-muted">If User B requests User A's alert ID, the API returns <code class="text-rose-400 font-mono">404 Not Found</code> rather than <code class="text-amber-400 font-mono">403 Forbidden</code>, preventing ID enumeration attacks.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 5: LOCAL SETUP GUIDE -->
+    <section id="setup" class="space-y-6 print-page-break">
+      <div class="flex items-center gap-3 pb-3 border-b border-slate-800">
+        <div class="w-8 h-8 rounded-lg bg-sky-500/20 text-sky-400 flex items-center justify-center font-bold">5</div>
+        <h2 class="text-2xl font-bold tracking-tight text-white print-text-dark">Local Operational Setup: 5 Concurrent Terminals</h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-xs font-mono">
+        <!-- Terminal 1 -->
+        <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 print-card space-y-2">
+          <div class="text-sky-400 font-bold flex items-center justify-between">
+            <span>Terminal 1: Docker</span>
+            <span class="text-[10px] text-slate-400">PostgreSQL + Redis</span>
+          </div>
+          <pre class="p-2.5 rounded bg-slate-950 border border-slate-800/80 text-slate-200"><code>docker compose up -d</code></pre>
+          <p class="text-slate-400 font-sans text-[11px]">Starts PostgreSQL 17 on port 5432 and Redis 7 on port 6379.</p>
+        </div>
+
+        <!-- Terminal 2 -->
+        <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 print-card space-y-2">
+          <div class="text-emerald-400 font-bold flex items-center justify-between">
+            <span>Terminal 2: Django Server</span>
+            <span class="text-[10px] text-slate-400">Port 8000</span>
+          </div>
+          <pre class="p-2.5 rounded bg-slate-950 border border-slate-800/80 text-slate-200"><code>.\venv\Scripts\Activate.ps1
+python manage.py runserver</code></pre>
+          <p class="text-slate-400 font-sans text-[11px]">Hosts the Django REST Framework API gateway.</p>
+        </div>
+
+        <!-- Terminal 3 -->
+        <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 print-card space-y-2">
+          <div class="text-amber-400 font-bold flex items-center justify-between">
+            <span>Terminal 3: Celery Worker</span>
+            <span class="text-[10px] text-slate-400">Solo Pool (Windows)</span>
+          </div>
+          <pre class="p-2.5 rounded bg-slate-950 border border-slate-800/80 text-slate-200"><code>.\venv\Scripts\Activate.ps1
+celery -A config worker --loglevel=info --pool=solo</code></pre>
+          <p class="text-slate-400 font-sans text-[11px]">Executes asynchronous price evaluation and notification tasks.</p>
+        </div>
+
+        <!-- Terminal 4 -->
+        <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 print-card space-y-2">
+          <div class="text-rose-400 font-bold flex items-center justify-between">
+            <span>Terminal 4: Celery Beat</span>
+            <span class="text-[10px] text-slate-400">Periodic Scheduler</span>
+          </div>
+          <pre class="p-2.5 rounded bg-slate-950 border border-slate-800/80 text-slate-200"><code>.\venv\Scripts\Activate.ps1
+celery -A config beat --loglevel=info</code></pre>
+          <p class="text-slate-400 font-sans text-[11px]">Dispatches <code class="text-rose-300">check_prices</code> task every 30 seconds (plus instant trigger on price drop).</p>
+        </div>
+
+        <!-- Terminal 5 -->
+        <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 print-card space-y-2">
+          <div class="text-indigo-400 font-bold flex items-center justify-between">
+            <span>Terminal 5: Frontend Vite</span>
+            <span class="text-[10px] text-slate-400">Port 5173</span>
+          </div>
+          <pre class="p-2.5 rounded bg-slate-950 border border-slate-800/80 text-slate-200"><code>cd frontend
+npm run dev</code></pre>
+          <p class="text-slate-400 font-sans text-[11px]">Serves the single-page application at <a href="http://localhost:5173" class="text-indigo-400 underline">localhost:5173</a>.</p>
+        </div>
+
+        <!-- Testing Suite -->
+        <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 print-card space-y-2">
+          <div class="text-purple-400 font-bold flex items-center justify-between">
+            <span>Automated Test Suites</span>
+            <span class="text-[10px] text-slate-400">Unit & Integration</span>
+          </div>
+          <pre class="p-2.5 rounded bg-slate-950 border border-slate-800/80 text-slate-200"><code>python manage.py test</code></pre>
+          <p class="text-slate-400 font-sans text-[11px]">Runs 100% clean test passes across alerts, notifications, and quota traps.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 6: STEP-BY-STEP FUNCTIONAL VALIDATION -->
+    <section id="validation" class="space-y-6 print-page-break">
+      <div class="flex items-center gap-3 pb-3 border-b border-slate-800">
+        <div class="w-8 h-8 rounded-lg bg-sky-500/20 text-sky-400 flex items-center justify-center font-bold">6</div>
+        <h2 class="text-2xl font-bold tracking-tight text-white print-text-dark">10-Step Local Application Functional Validation Manual</h2>
+      </div>
+
+      <div class="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900/60 print-card">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-slate-900/90 text-slate-300 font-mono border-b border-slate-800 uppercase tracking-wider text-[11px]">
+            <tr>
+              <th class="p-4 w-12 text-center">#</th>
+              <th class="p-4 w-44">Feature Target</th>
+              <th class="p-4">User Action on Local App (http://localhost:5173)</th>
+              <th class="p-4 w-64">Expected UI Verification</th>
+              <th class="p-4 w-64">Backend / Terminal Trace</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800/70 text-slate-300 print-text-dark">
+            <!-- Step 1 -->
+            <tr class="hover:bg-slate-800/30 transition">
+              <td class="p-4 text-center font-mono font-bold text-sky-400">1</td>
+              <td class="p-4 font-bold text-white print-text-dark">Flight Radar Feed</td>
+              <td class="p-4">Open <code class="text-sky-300 font-mono">http://localhost:5173</code>. View the active <strong>Flight Radar</strong> tab. Observe the 30-second countdown indicator.</td>
+              <td class="p-4">Displays 4 live route cards (DEL-BOM, BLR-HYD, DEL-BLR, BOM-GOA) with fares in ₹, airlines, and status tags. Countdown auto-refreshes data.</td>
+              <td class="p-4 font-mono text-[11px] text-slate-400">Terminal 2 logs: <br><span class="text-emerald-400">GET /api/flights/price/?route=DEL-BOM 200 OK</span></td>
+            </tr>
+
+            <!-- Step 2 -->
+            <tr class="hover:bg-slate-800/30 transition">
+              <td class="p-4 text-center font-mono font-bold text-sky-400">2</td>
+              <td class="p-4 font-bold text-white print-text-dark">User Registration</td>
+              <td class="p-4">Click <strong>Sign In / Register</strong> -> <strong>Register</strong>. Input username <code class="text-emerald-300 font-mono">traveler_john</code> and password <code class="text-emerald-300 font-mono">TravelPass@123</code>. Click <strong>Create Account</strong>.</td>
+              <td class="p-4">Green toast appears. Top navbar shows <code class="text-sky-300 font-mono">traveler_john</code> with blue <span class="px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 text-[10px]">USER</span> badge.</td>
+              <td class="p-4 font-mono text-[11px] text-slate-400">DevTools Network: <br><span class="text-emerald-400">POST /api/auth/register/ 201 Created</span>. Token saved in localStorage.</td>
+            </tr>
+
+            <!-- Step 3 -->
+            <tr class="hover:bg-slate-800/30 transition">
+              <td class="p-4 text-center font-mono font-bold text-sky-400">3</td>
+              <td class="p-4 font-bold text-white print-text-dark">Radar Route Pre-fill</td>
+              <td class="p-4">On Flight Radar, click <strong>Track This Route</strong> on the <code class="text-sky-300 font-mono">DEL → BOM</code> card.</td>
+              <td class="p-4">App automatically switches to <strong>Price Alerts</strong> tab and opens Create Modal with Origin (<code class="text-sky-300 font-mono">DEL</code>), Destination (<code class="text-sky-300 font-mono">BOM</code>), and current rate pre-populated.</td>
+              <td class="p-4 font-mono text-[11px] text-slate-400">React Cross-Tab state handler verified. No manual typing needed.</td>
+            </tr>
+
+            <!-- Step 4 -->
+            <tr class="hover:bg-slate-800/30 transition">
+              <td class="p-4 text-center font-mono font-bold text-sky-400">4</td>
+              <td class="p-4 font-bold text-white print-text-dark">Create Price Alert</td>
+              <td class="p-4">Set Target Threshold to <code class="text-emerald-300 font-mono">4500</code>. Click <strong>Activate Alert</strong>.</td>
+              <td class="p-4">Alert card appears in list with emerald <span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px]">ACTIVE</span> badge. Sidebar badge increments to <strong>1</strong>.</td>
+              <td class="p-4 font-mono text-[11px] text-slate-400">Network: <br><span class="text-emerald-400">POST /api/alerts/ 201 Created</span>. Row stored in <code class="text-slate-300">pulse_pricealert</code>.</td>
+            </tr>
+
+            <!-- Step 5 -->
+            <tr class="hover:bg-slate-800/30 transition">
+              <td class="p-4 text-center font-mono font-bold text-sky-400">5</td>
+              <td class="p-4 font-bold text-white print-text-dark">Filter & Soft Delete</td>
+              <td class="p-4">Click eye icon to view Alert Details modal. Create a second alert (<code class="text-sky-300 font-mono">BLR-HYD</code> @ ₹3000), then click the trash can icon on it to deactivate.</td>
+              <td class="p-4">Second alert turns gray <span class="px-1.5 py-0.5 rounded bg-slate-700 text-slate-300 text-[10px]">INACTIVE</span>. Filter tab <strong>Active</strong> hides it; filter tab <strong>Inactive</strong> shows it.</td>
+              <td class="p-4 font-mono text-[11px] text-slate-400">Network: <br><span class="text-emerald-400">DELETE /api/alerts/id/ 200 OK</span>. Database preserves row with status = inactive.</td>
+            </tr>
+
+            <!-- Step 6 -->
+            <tr class="hover:bg-slate-800/30 transition">
+              <td class="p-4 text-center font-mono font-bold text-sky-400">6</td>
+              <td class="p-4 font-bold text-white print-text-dark">Price Drop Trigger</td>
+              <td class="p-4">Go to <strong>Simulator</strong> tab. Select <code class="text-sky-300 font-mono">DEL-BOM</code>, click <strong>Scan Current Price</strong>, then click <strong>Evaluate Alerts Against Price</strong>.</td>
+              <td class="p-4">Live terminal prints: <code class="text-emerald-300 font-mono">✓ HIT: Alert #1 threshold satisfied!</code>. In Price Alerts Hub, badge flips to violet <span class="px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 text-[10px]">TRIGGERED</span>.</td>
+              <td class="p-4 font-mono text-[11px] text-slate-400">Terminal 3 (Celery): <br><span class="text-sky-400">Task send_notification received & succeeded</span>.</td>
+            </tr>
+
+            <!-- Step 7 -->
+            <tr class="hover:bg-slate-800/30 transition">
+              <td class="p-4 text-center font-mono font-bold text-sky-400">7</td>
+              <td class="p-4 font-bold text-white print-text-dark">Notification Center</td>
+              <td class="p-4">Click <strong>Notifications</strong> in the left sidebar.</td>
+              <td class="p-4">Audit card appears: <span class="text-slate-100 font-medium">"Price alert triggered! DEL-BOM is now ₹4,150 - below your threshold of ₹4,500"</span> with exact timestamp and green triggered price.</td>
+              <td class="p-4 font-mono text-[11px] text-slate-400">Network: <br><span class="text-emerald-400">GET /api/notifications/ 200 OK</span>. Fetches from <code class="text-slate-300">pulse_notificationlog</code>.</td>
+            </tr>
+
+            <!-- Step 8 -->
+            <tr class="hover:bg-slate-800/30 transition">
+              <td class="p-4 text-center font-mono font-bold text-sky-400">8</td>
+              <td class="p-4 font-bold text-white print-text-dark">Multi-Tenant Scoping</td>
+              <td class="p-4">Click <strong>Sign Out</strong>. Register a new user <code class="text-emerald-300 font-mono">traveler_sarah</code>.</td>
+              <td class="p-4">Sarah sees 0 alerts and 0 notifications. None of <code class="text-sky-300 font-mono">traveler_john</code>'s data is visible. Complete row-level isolation.</td>
+              <td class="p-4 font-mono text-[11px] text-slate-400">Directly requesting John's alert ID returns <span class="text-rose-400">404 Not Found</span>. No ID leaking.</td>
+            </tr>
+
+            <!-- Step 9 -->
+            <tr class="hover:bg-slate-800/30 transition">
+              <td class="p-4 text-center font-mono font-bold text-sky-400">9</td>
+              <td class="p-4 font-bold text-white print-text-dark">Admin RBAC Telemetry</td>
+              <td class="p-4">Click <strong>Admin Analytics</strong> (shows RBAC lock). Promote user via shell command. Sign out & sign back in. View Admin Analytics.</td>
+              <td class="p-4">Lock opens! Dashboard displays platform metrics: Total Alerts, Active vs. Triggered monitors, and Top Routes Leaderboard bar chart.</td>
+              <td class="p-4 font-mono text-[11px] text-slate-400">Network: <br><span class="text-emerald-400">GET /api/admin/summary/ 200 OK</span> protected by <code class="text-slate-300">IsAdminUser</code>.</td>
+            </tr>
+
+            <!-- Step 10 -->
+            <tr class="hover:bg-slate-800/30 transition">
+              <td class="p-4 text-center font-mono font-bold text-sky-400">10</td>
+              <td class="p-4 font-bold text-white print-text-dark">Quota Milestones</td>
+              <td class="p-4">In <strong>Simulator</strong>, click <strong>+ Advance to 25%</strong>, <strong>+ Advance to 50%</strong>, then <strong>+ Advance to 80%</strong>. Test <strong>Reset Quota</strong> button.</td>
+              <td class="p-4">Milestone toasts trigger. Top <strong>Quota Alert Banner</strong> turns bright yellow: <em>"80% Milestone Reached (1,600 / 2,000 calls)"</em>. Reset restores counter to 0.</td>
+              <td class="p-4 font-mono text-[11px] text-slate-400">Network: <br><span class="text-emerald-400">POST /api/admin/quota/simulate/ 200 OK</span>. Log recorded in database.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SECTION 7: SYSTEM ARCHITECTURE DEEP-DIVE & MASTER FAQ -->
+    <section id="architecture-faq" class="space-y-6 print-page-break">
+      <div class="flex items-center gap-3 pb-3 border-b border-slate-800">
+        <div class="w-8 h-8 rounded-lg bg-sky-500/20 text-sky-400 flex items-center justify-center font-bold">7</div>
+        <h2 class="text-2xl font-bold tracking-tight text-white print-text-dark">Executive System Pitch & Master Technical FAQ</h2>
+      </div>
+
+      <!-- Pitch Script (STAR Method) -->
+      <div class="rounded-2xl bg-gradient-to-br from-slate-900 to-indigo-950/40 border border-indigo-500/20 p-6 md:p-8 space-y-4 print-card">
+        <div class="text-indigo-400 font-mono text-xs font-bold uppercase tracking-wider">
+          🎯 The 60-Second Elevator Pitch (STAR Framework)
+        </div>
+        <p class="text-sm md:text-base text-slate-200 print-text-dark leading-relaxed italic">
+          "PulseNotify is a distributed, event-driven flight price monitoring and telemetry system built to replicate the tracking engines behind Google Flights and Skyscanner. Travelers register threshold alerts, and our system autonomously monitors airline fares without blocking user threads. 
+          <br><br>
+          To prevent API rate-limit exhaustion, I architected a <strong>route aggregation engine</strong> in Celery that queries distinct routes once per cycle, optimizing queries from $O(N) \to O(1)$. When a fare drops below budget, Celery workers dispatch asynchronous notifications and atomically transition alerts to 'Triggered' to eliminate notification spam. 
+          <br><br>
+          I also engineered third-party API quota milestone tracking with telemetry warnings at 25%, 50%, and 80%, full multi-tenant row-level isolation, and an interactive React dashboard with zero-CORS proxying."
+        </p>
+      </div>
+
+      <!-- FAQ Accordion / Cards -->
+      <div class="space-y-4 text-xs">
+        <!-- Q1 -->
+        <div class="rounded-xl bg-slate-900/60 border border-slate-800 p-5 space-y-2 print-card">
+          <div class="text-sky-400 font-bold font-mono text-sm">
+            Q1: Why choose Celery Beat instead of Linux cron jobs or standard Python sleep loops?
+          </div>
+          <p class="text-slate-300 print-text-dark leading-relaxed">
+            <strong>Answer</strong>: In-process loops like <code class="text-slate-400 font-mono">time.sleep()</code> inside web threads freeze application workers, waste memory, and die if the process restarts. Linux cron jobs lack centralized task queues, dead-letter retries, and distributed monitoring. Celery Beat acts as a dedicated clock process that publishes task messages to a centralized Redis broker. This decouples scheduling from execution: worker nodes can scale horizontally, recover gracefully from node failures, and absorb burst traffic without packet loss.
+          </p>
+        </div>
+
+        <!-- Q2 -->
+        <div class="rounded-xl bg-slate-900/60 border border-slate-800 p-5 space-y-2 print-card">
+          <div class="text-sky-400 font-bold font-mono text-sm">
+            Q2: What happens if 10,000 travelers monitor DEL-BOM at the same time?
+          </div>
+          <p class="text-slate-300 print-text-dark leading-relaxed">
+            <strong>Answer</strong>: PulseNotify handles this via database route deduplication. Our Celery task runs <code class="text-sky-300 font-mono">active_alerts.values_list('origin', 'destination').distinct()</code>. Even if 10,000 alerts exist for DEL-BOM, the flight provider endpoint is queried <strong>exactly once</strong>. The resulting price is evaluated against all 10,000 threshold values in memory in milliseconds. This protects API rate limits and reduces external costs by 99.9%.
+          </p>
+        </div>
+
+        <!-- Q3 -->
+        <div class="rounded-xl bg-slate-900/60 border border-slate-800 p-5 space-y-2 print-card">
+          <div class="text-sky-400 font-bold font-mono text-sm">
+            Q3: How do you prevent users from receiving 100 notifications if a flight stays cheap all day?
+          </div>
+          <p class="text-slate-300 print-text-dark leading-relaxed">
+            <strong>Answer</strong>: We implemented a three-stage state machine: <code class="text-emerald-400 font-mono">ACTIVE</code>, <code class="text-purple-400 font-mono">TRIGGERED</code>, and <code class="text-slate-400 font-mono">INACTIVE</code>. When a price condition is met, the worker writes the <code class="text-slate-300 font-mono">NotificationLog</code> and atomically transitions the alert status from <code class="text-emerald-400 font-mono">ACTIVE</code> to <code class="text-purple-400 font-mono">TRIGGERED</code> in the same transaction. The recurring 30-second Celery Beat task and instant price-ingestion triggers strictly query <code class="text-emerald-400 font-mono">status='active'</code>, so triggered alerts are never re-evaluated unless reactivated.
+          </p>
+        </div>
+
+        <!-- Q4 -->
+        <div class="rounded-xl bg-slate-900/60 border border-slate-800 p-5 space-y-2 print-card">
+          <div class="text-sky-400 font-bold font-mono text-sm">
+            Q4: Why choose PostgreSQL over a NoSQL document database like MongoDB?
+          </div>
+          <p class="text-slate-300 print-text-dark leading-relaxed">
+            <strong>Answer</strong>: Flight price monitoring demands strict relational integrity and ACID guarantees. Foreign keys linking Users -> PriceAlerts -> NotificationLogs guarantee that notifications cannot exist without valid alerts. Furthermore, PostgreSQL's relational query engine allows for fast aggregations, such as computing the Top Routes Leaderboard via <code class="text-slate-300 font-mono">values('origin','dest').annotate(count=Count('id'))</code> and enforcing row-level tenancy without custom document joins.
+          </p>
+        </div>
+
+        <!-- Q5 -->
+        <div class="rounded-xl bg-slate-900/60 border border-slate-800 p-5 space-y-2 print-card">
+          <div class="text-sky-400 font-bold font-mono text-sm">
+            Q5: How is security handled between ordinary travelers and platform administrators?
+          </div>
+          <p class="text-slate-300 print-text-dark leading-relaxed">
+            <strong>Answer</strong>: We enforce Role-Based Access Control (RBAC) across two tiers. Standard users are assigned <code class="text-sky-300 font-mono">role: 'user'</code>. Views like <code class="text-slate-300 font-mono">AdminSummaryView</code> and Quota Telemetry enforce custom permission class <code class="text-purple-300 font-mono">IsAdminUser</code>, returning HTTP 403 Forbidden to normal users. On the frontend, if a user lacks the admin role, the React interface displays an explicit RBAC Lock screen with terminal elevation instructions.
+          </p>
+        </div>
+
+        <!-- Q6 -->
+        <div class="rounded-xl bg-slate-900/60 border border-slate-800 p-5 space-y-2 print-card">
+          <div class="text-sky-400 font-bold font-mono text-sm">
+            Q6: If a user has two alerts on DEL-BOM (one for ≤₹4,000 and one for ≤₹3,500) and the price drops to ₹3,200, what happens?
+          </div>
+          <p class="text-slate-300 print-text-dark leading-relaxed">
+            <strong>Answer</strong>: Both alerts trigger independently. The evaluation engine identifies all active alerts whose threshold is greater than or equal to ₹3,200. Because both ₹4,000 and ₹3,500 satisfy the condition, the system enqueues two separate <code class="text-sky-300 font-mono">send_notification.delay(alert_id, price)</code> Celery tasks. Each task generates its own <code class="text-purple-300 font-mono">NotificationLog</code> entry with individual savings calculations (₹800 savings for the ₹4,000 alert and ₹300 savings for the ₹3,500 alert) and transitions each alert atomically to <code class="text-emerald-400 font-mono">TRIGGERED</code>. On subsequent 30-second cycles, neither alert triggers again due to anti-spam idempotency.
+          </p>
+        </div>
+
+        <!-- Q7 -->
+        <div class="rounded-xl bg-slate-900/60 border border-slate-800 p-5 space-y-2 print-card">
+          <div class="text-sky-400 font-bold font-mono text-sm">
+            Q7: Why specify --pool=solo for Celery workers on Windows?
+          </div>
+          <p class="text-slate-300 print-text-dark leading-relaxed">
+            <strong>Answer</strong>: Windows does not support the POSIX <code class="text-slate-300 font-mono">fork()</code> system call, which is Celery's default execution mechanism on Linux. Running Celery without <code class="text-emerald-400 font-mono">--pool=solo</code> on Windows causes multiprocessing deadlocks, task hanging, and file descriptor permission errors. The solo pool executes tasks in-process within a single thread, providing complete reliability during local development while maintaining full Redis queue semantics.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="pt-8 border-t border-slate-800 text-center text-xs text-slate-500 font-mono space-y-2">
+      <div>PulseNotify — Flight Price Monitor & Alert System • Production Master Blueprint</div>
+      <div class="text-[11px] text-slate-600">Built with Django REST Framework, Celery, Celery Beat, Redis, PostgreSQL, and React 18</div>
+    </footer>
+
+  </main>
+
+</body>
+</html>
+

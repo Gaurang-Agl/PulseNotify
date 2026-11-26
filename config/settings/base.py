@@ -1,4 +1,4 @@
-﻿from datetime import timedelta
+from datetime import timedelta
 from pathlib import Path
 
 from decouple import AutoConfig, Csv
@@ -101,7 +101,7 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=7),
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
@@ -116,8 +116,16 @@ CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = TIME_ZONE
 
 CELERY_BEAT_SCHEDULE = {
-    "check-flight-prices-every-minute": {
+    "check-flight-prices-every-30-seconds": {
         "task": "pulse.tasks.check_prices",
-        "schedule": 60.0,
+        "schedule": 30.0,
     },
 }
+
+# External Flight Price Provider & Quota Settings
+FLIGHT_PRICE_PROVIDER = config("FLIGHT_PRICE_PROVIDER", default="amadeus")
+AMADEUS_CLIENT_ID = config("AMADEUS_CLIENT_ID", default="")
+AMADEUS_CLIENT_SECRET = config("AMADEUS_CLIENT_SECRET", default="")
+KIWI_API_KEY = config("KIWI_API_KEY", default="")
+EXTERNAL_API_MONTHLY_QUOTA = config("EXTERNAL_API_MONTHLY_QUOTA", default=2000, cast=int)
+

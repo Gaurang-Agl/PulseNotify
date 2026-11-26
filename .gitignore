@@ -50,3 +50,9 @@ celerybeat.pid
 *.swo
 .DS_Store
 Thumbs.db
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
